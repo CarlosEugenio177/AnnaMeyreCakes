@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color: #3f3434;
-  background: #f7f0c8;
+  color: #8a4b3e;
+  background: #fbf8f5;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -18,9 +18,7 @@
 
 html {
   min-height: 100%;
-  background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.88), transparent 42rem),
-    linear-gradient(180deg, #fffaf2 0%, #f7f0c8 48%, #fff6f1 100%);
+  background: #fbf8f5;
 }
 
 body {
@@ -40,4 +38,14 @@ button {
 
 #root {
   min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid #fbf7f4;
+  border-radius: 999px;
+  background: rgba(181, 106, 98, 0.55);
 }

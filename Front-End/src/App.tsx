@@ -1,17 +1,61 @@
-import { useState } from 'react';
-import { CakeBuilder } from './pages/CakeBuilder';
+import { useEffect, useState } from 'react';
+import { Builder } from './pages/Builder';
 import { Home } from './pages/Home';
+import { Dashboard } from './pages/admin/Dashboard';
+import { Login } from './pages/admin/Login';
+import { OrderDetails } from './pages/admin/OrderDetails';
+import { Orders } from './pages/admin/Orders';
+import { Settings } from './pages/admin/Settings';
+import { useAuthStore } from './store/authStore';
 
 function App() {
-  const [started, setStarted] = useState(false);
+  const [path, setPath] = useState(window.location.pathname);
+  const token = useAuthStore((state) => state.token);
 
-  return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#ffffff_0%,#fffaf2_38%,#F7F0C8_100%)] text-[#3f3434] md:flex md:items-center md:justify-center md:bg-[#f3ded9] md:p-6">
-      <div className="mx-auto min-h-screen w-full max-w-[430px] overflow-hidden bg-petal shadow-none md:min-h-[860px] md:rounded-[42px] md:shadow-[0_22px_70px_rgba(139,85,60,0.22)] md:ring-8 md:ring-white/70">
-        {started ? <CakeBuilder /> : <Home onStart={() => setStarted(true)} />}
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    const handlePopState = () => setPath(window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  function navigate(nextPath: string) {
+    window.history.pushState({}, '', nextPath);
+    setPath(nextPath);
+    window.scrollTo({ top: 0 });
+  }
+
+  if (path === '/builder') {
+    return <Builder navigate={navigate} />;
+  }
+
+  if (path === '/admin/login') {
+    return <Login navigate={navigate} />;
+  }
+
+  if (path.startsWith('/admin')) {
+    if (!token) {
+      return <Login navigate={navigate} />;
+    }
+
+    if (path === '/admin' || path === '/admin/') {
+      return <Dashboard navigate={navigate} />;
+    }
+
+    if (path === '/admin/orders') {
+      return <Orders navigate={navigate} />;
+    }
+
+    if (path.startsWith('/admin/orders/')) {
+      const id = path.split('/').at(-1) ?? '';
+      return <OrderDetails id={id} navigate={navigate} />;
+    }
+
+    if (path === '/admin/settings') {
+      return <Settings navigate={navigate} />;
+    }
+  }
+
+  return <Home navigate={navigate} />;
 }
 
 export default App;
