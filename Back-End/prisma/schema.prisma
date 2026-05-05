@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+}
+
+enum OrderStatus {
+  NEW
+  WAITING_DEPOSIT
+  DEPOSIT_PAID
+  CONFIRMED
+  IN_PRODUCTION
+  READY
+  DELIVERED
+  CANCELED
+}
+
+enum ProductType {
+  CAKE
+  SWEET
+}
+
+enum PaymentMethod {
+  PIX
+  CASH
+  CARD
+  BANK_TRANSFER
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
+enum StoreStatus {
+  OPEN
+  CLOSED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(ADMIN)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Customer {
+  id    String @id @default(uuid())
+  name  String
+  phone String @unique
+
+  orders Order[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  orderCode       String      @unique @map("order_code")
+  customerId      String      @map("customer_id")
+  status          OrderStatus @default(NEW)
+  totalPrice      Decimal     @map("total_price") @db.Decimal(10, 2)
+  depositPrice    Decimal     @map("deposit_price") @db.Decimal(10, 2)
+  remainingPrice  Decimal     @map("remaining_price") @db.Decimal(10, 2)
+  desiredDate     DateTime    @map("desired_date")
+  notes           String?
+  whatsappMessage String?     @map("whatsapp_message")
+
+  customer Customer        @relation(fields: [customerId], references: [id])
+  items    OrderItem[]
+  payments PaymentRecord[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([customerId])
+  @@index([status])
+  @@index([desiredDate])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String      @id @default(uuid())
+  orderId     String      @map("order_id")
+  productType ProductType @map("product_type")
+  quantity    Int
+  unitPrice   Decimal     @map("unit_price") @db.Decimal(10, 2)
+  totalPrice  Decimal     @map("total_price") @db.Decimal(10, 2)
+
+  order       Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  cakeDetail  CakeOrderDetail?
+  sweetDetail SweetOrderDetail?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model CakeOrderDetail {
+  id                String  @id @default(uuid())
+  orderItemId       String  @unique @map("order_item_id")
+  doughId           String  @map("dough_id")
+  cakeSizeId        String  @map("cake_size_id")
+  filling1Id        String  @map("filling_1_id")
+  filling2Id        String  @map("filling_2_id")
+  toppingId         String  @map("topping_id")
+  fillingExtraPrice Decimal @default(0) @map("filling_extra_price") @db.Decimal(10, 2)
+
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  dough     Dough     @relation(fields: [doughId], references: [id])
+  cakeSize  CakeSize  @relation(fields: [cakeSizeId], references: [id])
+  filling1  Filling   @relation("CakeFilling1", fields: [filling1Id], references: [id])
+  filling2  Filling   @relation("CakeFilling2", fields: [filling2Id], references: [id])
+  topping   Topping   @relation(fields: [toppingId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("cake_order_details")
+}
+
+model SweetOrderDetail {
+  id          String @id @default(uuid())
+  orderItemId String @unique @map("order_item_id")
+  sweetTypeId String @map("sweet_type_id")
+  quantity    Int
+  maxFlavors  Int    @map("max_flavors")
+
+  orderItem OrderItem          @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  sweetType SweetType          @relation(fields: [sweetTypeId], references: [id])
+  flavors   SweetOrderFlavor[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("sweet_order_details")
+}
+
+model SweetOrderFlavor {
+  id                 String @id @default(uuid())
+  sweetOrderDetailId String @map("sweet_order_detail_id")
+  sweetFlavorId      String @map("sweet_flavor_id")
+
+  sweetOrderDetail SweetOrderDetail @relation(fields: [sweetOrderDetailId], references: [id], onDelete: Cascade)
+  sweetFlavor      SweetFlavor      @relation(fields: [sweetFlavorId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([sweetOrderDetailId, sweetFlavorId])
+  @@index([sweetFlavorId])
+  @@map("sweet_order_flavors")
+}
+
+model Dough {
+  id       String  @id @default(uuid())
+  name     String
+  colorHex String  @map("color_hex")
+  isActive Boolean @default(true) @map("is_active")
+
+  cakeDetails CakeOrderDetail[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("doughs")
+}
+
+model Filling {
+  id         String  @id @default(uuid())
+  name       String
+  extraPrice Decimal @default(0) @map("extra_price") @db.Decimal(10, 2)
+  colorHex   String  @map("color_hex")
+  isActive   Boolean @default(true) @map("is_active")
+
+  cakeDetailsAsFilling1 CakeOrderDetail[] @relation("CakeFilling1")
+  cakeDetailsAsFilling2 CakeOrderDetail[] @relation("CakeFilling2")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("fillings")
+}
+
+model Topping {
+  id       String  @id @default(uuid())
+  name     String
+  colorHex String  @map("color_hex")
+  isActive Boolean @default(true) @map("is_active")
+
+  cakeDetails CakeOrderDetail[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("toppings")
+}
+
+model CakeSize {
+  id       String  @id @default(uuid())
+  slices   Int
+  price    Decimal @db.Decimal(10, 2)
+  isActive Boolean @default(true) @map("is_active")
+
+  cakeDetails CakeOrderDetail[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("cake_sizes")
+}
+
+model SweetType {
+  id          String  @id @default(uuid())
+  name        String
+  pricePer100 Decimal @map("price_per_100") @db.Decimal(10, 2)
+  isActive    Boolean @default(true) @map("is_active")
+
+  flavors      SweetFlavor[]
+  sweetDetails SweetOrderDetail[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("sweet_types")
+}
+
+model SweetFlavor {
+  id          String  @id @default(uuid())
+  name        String
+  sweetTypeId String  @map("sweet_type_id")
+  isActive    Boolean @default(true) @map("is_active")
+
+  sweetType    SweetType          @relation(fields: [sweetTypeId], references: [id])
+  orderFlavors SweetOrderFlavor[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([sweetTypeId])
+  @@map("sweet_flavors")
+}
+
+model PaymentRecord {
+  id            String        @id @default(uuid())
+  orderId       String        @map("order_id")
+  amount        Decimal       @db.Decimal(10, 2)
+  paymentMethod PaymentMethod @map("payment_method")
+  status        PaymentStatus @default(PENDING)
+  paidAt        DateTime?     @map("paid_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([orderId])
+  @@map("payment_records")
+}
+
+model Settings {
+  id             String      @id @default(uuid())
+  whatsappNumber String      @map("whatsapp_number")
+  storeStatus    StoreStatus @default(OPEN) @map("store_status")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

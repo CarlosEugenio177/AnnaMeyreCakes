@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: anna-meyre-cakes-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: anna_meyre
+      POSTGRES_PASSWORD: anna_meyre_dev
+      POSTGRES_DB: anna_meyre_cakes
+    ports:
+      - "5432:5432"
+    volumes:
+      - anna_meyre_cakes_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U anna_meyre -d anna_meyre_cakes"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  anna_meyre_cakes_pgdata:
