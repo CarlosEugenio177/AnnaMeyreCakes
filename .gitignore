@@ -1,6 +1,4 @@
 /logo
-/mockup
-/documentação
 .env
 .env.*
 !.env.example
