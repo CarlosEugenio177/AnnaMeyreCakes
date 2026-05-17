@@ -8,12 +8,14 @@ type OptionCardProps = {
   color?: string;
   onClick: () => void;
   className?: string;
+  testId?: string;
 };
 
-export function OptionCard({ children, selected = false, disabled = false, color, onClick, className = '' }: OptionCardProps) {
+export function OptionCard({ children, selected = false, disabled = false, color, onClick, className = '', testId }: OptionCardProps) {
   return (
     <button
       type="button"
+      data-testid={testId}
       disabled={disabled}
       onClick={onClick}
       className={`min-h-[86px] rounded-[22px] border bg-white px-5 py-4 text-left transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 md:min-h-[104px] md:px-6 lg:min-h-[78px] lg:rounded-[16px] lg:px-3.5 lg:py-2.5 ${

@@ -22,3 +22,15 @@ export class SettingsController {
     return this.settingsService.updateSettings(dto);
   }
 }
+
+@Controller('api/admin/settings')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.OWNER, UserRole.ADMIN)
+export class ApiAdminSettingsController {
+  constructor(private readonly settingsService: SettingsService) {}
+
+  @Get()
+  getSettings() {
+    return this.settingsService.getSettings();
+  }
+}

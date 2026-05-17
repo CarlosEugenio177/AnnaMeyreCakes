@@ -47,13 +47,13 @@ export function Login({ navigate }: LoginProps) {
         <h1 className="mt-5 text-center font-display text-3xl font-bold text-roseText">Área administrativa</h1>
         <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <Field label="E-mail" error={formState.errors.email?.message}>
-            <input className={inputClassName} {...register('email')} type="email" />
+            <input className={inputClassName} {...register('email')} data-testid="admin-login-email" type="email" />
           </Field>
           <Field label="Senha" error={formState.errors.password?.message}>
-            <input className={inputClassName} {...register('password')} type="password" />
+            <input className={inputClassName} {...register('password')} data-testid="admin-login-password" type="password" />
           </Field>
           {error ? <p className="rounded-[18px] bg-brand/10 px-4 py-3 text-sm font-semibold text-brand">{error}</p> : null}
-          <Button className="w-full py-5" disabled={isSubmitting} type="submit">
+          <Button className="w-full py-5" disabled={isSubmitting} type="submit" data-testid="admin-login-submit">
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </Button>
           <Button className="w-full" variant="ghost" type="button" onClick={() => navigate('/')}>

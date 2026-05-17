@@ -34,6 +34,13 @@ export class OrdersController {
     return this.ordersService.getAdminOrders();
   }
 
+  @Get('api/admin/orders')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
+  getApiAdminOrders() {
+    return this.ordersService.getAdminOrders();
+  }
+
   @Get('admin/orders/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER, UserRole.ADMIN)

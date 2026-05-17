@@ -51,8 +51,6 @@ export class ApiCustomersController {
   @Get('me')
   @UseGuards(CustomerSessionGuard)
   getMe(@CurrentCustomer() customer: Customer) {
-    return {
-      customer: this.customersService.getProfile(customer),
-    };
+    return this.customersService.getProfile(customer);
   }
 }

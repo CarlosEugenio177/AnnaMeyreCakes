@@ -59,7 +59,7 @@ function App() {
       );
     }
 
-    if (path === '/admin' || path === '/admin/') {
+    if (path === '/admin' || path === '/admin/' || path === '/admin/dashboard') {
       return (
         <Suspense fallback={<LoadingScreen />}>
           <Dashboard navigate={navigate} />

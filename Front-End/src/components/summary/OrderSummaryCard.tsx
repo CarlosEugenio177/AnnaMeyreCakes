@@ -14,7 +14,7 @@ export function OrderSummaryCard(props: OrderSummaryCardProps) {
   const preview = calculatePricePreview(props);
 
   return (
-    <Card className="space-y-2.5 border-transparent bg-white p-3.5 shadow-none md:p-3.5">
+    <Card className="space-y-2.5 border-transparent bg-white p-3.5 shadow-none md:p-3.5" data-testid="order-summary">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-xl font-bold text-roseText">Resumo</h2>
         <span className="text-xs font-bold uppercase text-softGray">Prévia</span>
@@ -24,7 +24,7 @@ export function OrderSummaryCard(props: OrderSummaryCardProps) {
         <SummaryRow label="Docinhos" value={currency.format(preview.sweetTotal)} />
       </div>
       <div className="rounded-[16px] border border-brand/10 bg-white p-2.5">
-        <SummaryRow label="Total" value={currency.format(preview.total)} strong />
+        <SummaryRow label="Total" value={currency.format(preview.total)} strong testId="order-total" />
         <SummaryRow label="Entrada 50%" value={currency.format(preview.deposit)} />
         <SummaryRow label="Restante" value={currency.format(preview.remaining)} />
       </div>
@@ -32,9 +32,9 @@ export function OrderSummaryCard(props: OrderSummaryCardProps) {
   );
 }
 
-function SummaryRow({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+function SummaryRow({ label, value, strong = false, testId }: { label: string; value: string; strong?: boolean; testId?: string }) {
   return (
-    <div className={`flex items-center justify-between gap-4 py-0.5 text-xs ${strong ? 'text-sm font-bold text-brand' : 'text-cocoa'}`}>
+    <div data-testid={testId} className={`flex items-center justify-between gap-4 py-0.5 text-xs ${strong ? 'text-sm font-bold text-brand' : 'text-cocoa'}`}>
       <span>{label}</span>
       <span>{value}</span>
     </div>

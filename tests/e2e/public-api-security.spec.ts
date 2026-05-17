@@ -41,7 +41,7 @@ test.describe('public API contract security', () => {
 
   test('GET /api/customer/me with session returns only the authenticated customer contact DTO', async ({ playwright }) => {
     const context = await playwright.request.newContext({
-      baseURL: process.env.E2E_API_URL ?? 'http://localhost:3000',
+      baseURL: process.env.E2E_API_URL ?? 'http://127.0.0.1:3000',
     });
 
     const { response, payload } = await createCustomerOrder(context);
@@ -56,12 +56,9 @@ test.describe('public API contract security', () => {
         'phone',
         'email',
         'address',
-        '$.customer.phone',
-        '$.customer.email',
-        '$.customer.address',
       ],
     });
-    expect(body.customer).toEqual({
+    expect(body).toEqual({
       name: payload.customerName,
       phone: payload.customerPhone.replace(/\D/g, ''),
       email: payload.customerEmail,
@@ -72,7 +69,7 @@ test.describe('public API contract security', () => {
   });
 
   test('admin endpoints without admin session return 401 or 403', async ({ request }) => {
-    for (const endpoint of ['/admin/orders', '/admin/settings', '/admin/options']) {
+    for (const endpoint of ['/api/admin/orders', '/api/admin/settings', '/api/admin/options']) {
       const response = await request.get(endpoint);
       expect([401, 403]).toContain(response.status());
 

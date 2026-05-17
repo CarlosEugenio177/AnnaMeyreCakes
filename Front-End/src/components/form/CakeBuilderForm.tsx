@@ -29,7 +29,7 @@ export function CakeBuilderForm({
         <StepHeader eyebrow="Passo 1" title="Escolha a massa" hint="A base de tudo." />
         <div className="grid gap-4 md:grid-cols-3 lg:gap-2.5">
           {catalog.doughs.map((item) => (
-            <OptionCard key={item.id} selected={item.id === selectedDoughId} color={item.colorHex} onClick={() => onSelect('selectedDoughId', item.id)}>
+            <OptionCard key={item.id} selected={item.id === selectedDoughId} color={item.colorHex} testId={`dough-option-${toSlug(item.name)}`} onClick={() => onSelect('selectedDoughId', item.id)}>
               <span className="block text-2xl font-semibold lg:text-[15px]">{getDoughDisplayName(item.name)}</span>
               <span className="mt-1 block text-lg text-muted lg:mt-0.5 lg:text-[11px]">{getDoughDescription(item.name)}</span>
             </OptionCard>
@@ -41,7 +41,7 @@ export function CakeBuilderForm({
         <StepHeader eyebrow="Passo 2" title="Escolha o tamanho" hint="O total usa o valor do catalogo." />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-2">
           {catalog.cakeSizes.map((item) => (
-            <OptionCard key={item.id} selected={item.id === selectedCakeSizeId} onClick={() => onSelect('selectedCakeSizeId', item.id)}>
+            <OptionCard key={item.id} selected={item.id === selectedCakeSizeId} testId={`size-option-${item.slices}`} onClick={() => onSelect('selectedCakeSizeId', item.id)}>
               <span className="block text-2xl font-semibold lg:text-[15px]">{item.slices} fatias</span>
               <span className="text-lg text-muted lg:text-[11px]">{currency.format(toNumber(item.price))}</span>
             </OptionCard>
@@ -68,7 +68,7 @@ export function CakeBuilderForm({
         <StepHeader eyebrow="Passo 5" title="Escolha a cobertura" hint="O catalogo oficial nao possui chantilly." />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-2">
           {catalog.toppings.map((item) => (
-            <OptionCard key={item.id} selected={item.id === selectedToppingId} color={item.colorHex} onClick={() => onSelect('selectedToppingId', item.id)}>
+            <OptionCard key={item.id} selected={item.id === selectedToppingId} color={item.colorHex} testId={`topping-option-${toSlug(item.name)}`} onClick={() => onSelect('selectedToppingId', item.id)}>
               <span className="block text-xl font-semibold lg:text-[13px]">{item.name}</span>
             </OptionCard>
           ))}
@@ -92,7 +92,7 @@ function FillingStep({ step, title, fillings, selectedId, onSelect }: FillingSte
       <StepHeader eyebrow={step} title={title} hint="Recheios especiais podem somar acrescimo ao tamanho." />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-2">
         {fillings.map((item) => (
-          <OptionCard key={item.id} selected={item.id === selectedId} color={item.colorHex} onClick={() => onSelect(item.id)}>
+          <OptionCard key={item.id} selected={item.id === selectedId} color={item.colorHex} testId={`filling-option-${toSlug(item.name)}`} onClick={() => onSelect(item.id)}>
             <span className="block text-xl font-semibold lg:text-[13px]">{item.name}</span>
             {toNumber(item.extraPrice) > 0 ? (
               <span className="text-base text-muted lg:text-[11px]">+ {currency.format(toNumber(item.extraPrice))}</span>
@@ -104,6 +104,15 @@ function FillingStep({ step, title, fillings, selectedId, onSelect }: FillingSte
       </div>
     </Card>
   );
+}
+
+function toSlug(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }
 
 function getDoughDisplayName(name: string) {

@@ -25,6 +25,7 @@ export function Dashboard({ navigate }: DashboardProps) {
 
   return (
     <AdminLayout title="Dashboard" navigate={navigate}>
+      <div data-testid="admin-dashboard" className="sr-only">Dashboard</div>
       <div className="grid gap-4 md:grid-cols-3">
         <Metric label="Pedidos ativos" value={String(totalOpen)} />
         <Metric label="Pedidos recebidos" value={String(orders.length)} />

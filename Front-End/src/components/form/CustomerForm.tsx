@@ -15,16 +15,16 @@ export function CustomerForm({ register, minDate, errors }: CustomerFormProps) {
       <StepHeader eyebrow="Finalizacao" title="Seus dados" hint="Nome, WhatsApp e data sao obrigatorios." />
       <div className="grid gap-4 md:grid-cols-2 lg:gap-2.5">
         <Field label="Nome" error={errors.customerName}>
-          <input {...register('customerName')} className={inputClassName} placeholder="Seu nome" />
+          <input {...register('customerName')} className={inputClassName} data-testid="contact-name-input" placeholder="Seu nome" />
         </Field>
         <Field label="WhatsApp" error={errors.customerPhone}>
-          <input {...register('customerPhone')} className={inputClassName} inputMode="tel" placeholder="(00) 00000-0000" />
+          <input {...register('customerPhone')} className={inputClassName} data-testid="contact-phone-input" inputMode="tel" placeholder="(00) 00000-0000" />
         </Field>
         <Field label="Email" error={errors.customerEmail}>
-          <input {...register('customerEmail')} className={inputClassName} inputMode="email" placeholder="voce@email.com" />
+          <input {...register('customerEmail')} className={inputClassName} data-testid="contact-email-input" inputMode="email" placeholder="voce@email.com" />
         </Field>
         <Field label="Endereco" error={errors.customerAddress}>
-          <input {...register('customerAddress')} className={inputClassName} placeholder="Rua, numero, bairro" />
+          <input {...register('customerAddress')} className={inputClassName} data-testid="contact-address-input" placeholder="Rua, numero, bairro" />
         </Field>
         <Field label="Data de entrega" error={errors.desiredDate}>
           <input {...register('desiredDate')} className={inputClassName} min={minDate} type="date" />

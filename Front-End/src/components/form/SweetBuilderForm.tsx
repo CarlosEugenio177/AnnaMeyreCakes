@@ -70,6 +70,7 @@ export function SweetBuilderForm({ catalog, sweets, onChange }: SweetBuilderForm
                     <OptionCard
                       key={item.id}
                       selected={item.id === sweet.sweetTypeId}
+                      testId={`sweet-option-${toSlug(item.name)}`}
                       onClick={() => updateSweet(index, { sweetTypeId: item.id, sweetFlavorIds: [] })}
                     >
                       <span className="block text-xl font-semibold lg:text-[13px]">{item.name}</span>
@@ -100,7 +101,7 @@ export function SweetBuilderForm({ catalog, sweets, onChange }: SweetBuilderForm
                       const selected = sweet.sweetFlavorIds.includes(flavor.id);
                       const disabled = !selected && sweet.sweetFlavorIds.length >= maxFlavors;
                       return (
-                        <OptionCard key={flavor.id} selected={selected} disabled={disabled} onClick={() => toggleFlavor(index, flavor.id)}>
+                        <OptionCard key={flavor.id} selected={selected} disabled={disabled} testId={`sweet-flavor-option-${toSlug(flavor.name)}`} onClick={() => toggleFlavor(index, flavor.id)}>
                           <span className="text-lg font-semibold lg:text-[13px]">{flavor.name}</span>
                         </OptionCard>
                       );
@@ -126,4 +127,13 @@ export function SweetBuilderForm({ catalog, sweets, onChange }: SweetBuilderForm
       )}
     </Card>
   );
+}
+
+function toSlug(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }

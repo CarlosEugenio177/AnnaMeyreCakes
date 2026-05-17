@@ -144,7 +144,7 @@ export function Builder({ navigate }: BuilderProps) {
   }
 
   return (
-    <main className="min-h-screen bg-petal pb-28 text-cocoa md:pb-0">
+    <main className="min-h-screen bg-petal pb-28 text-cocoa md:pb-0" data-testid="builder-page">
       <header className="sticky top-0 z-30 border-b border-line bg-surface/95 px-5 py-4 backdrop-blur lg:py-2.5">
         <div className="mx-auto grid max-w-[1180px] grid-cols-[1fr_auto_1fr] items-center">
           <Button variant="ghost" onClick={() => navigate('/')} className="justify-self-start px-0 text-xl font-normal lg:min-h-9 lg:text-sm">
@@ -167,16 +167,16 @@ export function Builder({ navigate }: BuilderProps) {
         <StoreStatusBanner closed={isClosed} />
 
         {customer ? (
-          <div className="mx-5 mb-5 flex flex-col gap-3 rounded-[22px] border border-line bg-white/80 px-5 py-4 text-cocoa shadow-[0_12px_32px_rgba(138,75,62,0.04)] md:mx-0 md:flex-row md:items-center md:justify-between lg:mb-4 lg:min-h-[64px] lg:rounded-[20px] lg:border-brand/10 lg:bg-blush/35 lg:px-4 lg:py-2.5 lg:shadow-[0_8px_22px_rgba(138,75,62,0.035)]">
+          <div className="mx-5 mb-5 flex flex-col gap-3 rounded-[22px] border border-line bg-white/80 px-5 py-4 text-cocoa shadow-[0_12px_32px_rgba(138,75,62,0.04)] md:mx-0 md:flex-row md:items-center md:justify-between lg:mb-4 lg:min-h-[64px] lg:rounded-[20px] lg:border-brand/10 lg:bg-blush/35 lg:px-4 lg:py-2.5 lg:shadow-[0_8px_22px_rgba(138,75,62,0.035)]" data-testid="customer-greeting">
             <div className="min-w-0">
               <p className="font-semibold">Olá, {customer.name}! Seus dados já estão preenchidos.</p>
               <p className="text-sm text-muted">Você pode alterar qualquer informação antes de finalizar.</p>
             </div>
             <div className="flex shrink-0 gap-2">
-              <Button type="button" variant="secondary" onClick={() => navigate('/meus-pedidos')} className="px-3 py-2 text-sm lg:min-h-9 lg:border-brand/15 lg:bg-white/80 lg:px-4 lg:text-xs">
+              <Button type="button" variant="secondary" onClick={() => navigate('/meus-pedidos')} className="px-3 py-2 text-sm lg:min-h-9 lg:border-brand/15 lg:bg-white/80 lg:px-4 lg:text-xs" data-testid="customer-orders-link">
                 Meus pedidos
               </Button>
-              <Button type="button" variant="ghost" onClick={() => void logout()} className="px-3 py-2 text-sm lg:min-h-9 lg:px-3 lg:text-xs">
+              <Button type="button" variant="ghost" onClick={() => void logout()} className="px-3 py-2 text-sm lg:min-h-9 lg:px-3 lg:text-xs" data-testid="customer-logout-button">
                 Sair
               </Button>
             </div>
@@ -228,7 +228,7 @@ export function Builder({ navigate }: BuilderProps) {
                 filling2Id={order.selectedFilling2Id}
                 sweets={order.sweets}
               />
-              <Button type="submit" disabled={isClosed || isSubmitting} className="w-full min-h-11 py-2.5 text-xs">
+                <Button type="submit" disabled={isClosed || isSubmitting} className="w-full min-h-11 py-2.5 text-xs" data-testid="finish-order-button">
                 <MessageCircle className="h-4 w-4" aria-hidden />
                 {isSubmitting ? 'Enviando pedido...' : 'Enviar pedido pelo WhatsApp'}
               </Button>

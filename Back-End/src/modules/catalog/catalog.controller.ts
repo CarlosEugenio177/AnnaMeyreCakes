@@ -34,6 +34,13 @@ export class CatalogController {
     return this.catalogService.getAdminOptions();
   }
 
+  @Get('api/admin/options')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
+  getApiAdminOptions() {
+    return this.catalogService.getAdminOptions();
+  }
+
   @Post('admin/options/doughs')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER, UserRole.ADMIN)

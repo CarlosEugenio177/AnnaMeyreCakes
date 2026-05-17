@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { SettingsController } from './settings.controller';
+import { ApiAdminSettingsController, SettingsController } from './settings.controller';
 import { ApiPublicSettingsController, SettingsPublicController } from './settings-public.controller';
 import { SettingsService } from './settings.service';
 
 @Module({
-  controllers: [SettingsController, SettingsPublicController, ApiPublicSettingsController],
+  controllers: [SettingsController, ApiAdminSettingsController, SettingsPublicController, ApiPublicSettingsController],
   providers: [SettingsService],
   exports: [SettingsService],
 })
