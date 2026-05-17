@@ -171,6 +171,43 @@ Com cobertura:
 npm run test:cov
 ```
 
+End-to-end e contratos de API, a partir da raiz do projeto:
+
+```bash
+npm run dev:db
+cd Back-End
+npm run prisma:migrate
+npm run prisma:seed
+cd ..
+npm run dev
+```
+
+Em outro terminal:
+
+```bash
+npm run test:e2e
+```
+
+Modo visual do Playwright:
+
+```bash
+npm run test:e2e:ui
+```
+
+Regressao:
+
+```bash
+npm run test:regression
+```
+
+Todos os testes:
+
+```bash
+npm run test:all
+```
+
+Os testes de contrato em `tests/e2e/public-api-security.spec.ts` validam que endpoints publicos nao vazam modelos brutos do banco. Eles usam o helper recursivo `assertNoForbiddenFields`.
+
 ## Login admin de desenvolvimento
 
 As credenciais sao criadas pelo seed:

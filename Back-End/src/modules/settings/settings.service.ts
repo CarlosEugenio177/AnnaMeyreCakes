@@ -19,6 +19,15 @@ export class SettingsService {
     });
   }
 
+  async getPublicSettings() {
+    const settings = await this.getSettings();
+
+    return {
+      whatsappNumber: settings.whatsappNumber,
+      storeStatus: settings.storeStatus,
+    };
+  }
+
   async updateSettings(dto: UpdateSettingsDto): Promise<Settings> {
     await this.getSettings();
 

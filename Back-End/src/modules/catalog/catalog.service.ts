@@ -45,11 +45,37 @@ export class CatalogService {
       ]);
 
     return {
-      doughs,
-      fillings,
-      toppings,
-      cakeSizes,
-      sweetTypes,
+      doughs: doughs.map((item) => ({
+        publicId: item.id,
+        name: item.name,
+        colorHex: item.colorHex,
+      })),
+      fillings: fillings.map((item) => ({
+        publicId: item.id,
+        name: item.name,
+        extraPrice: item.extraPrice,
+        colorHex: item.colorHex,
+      })),
+      toppings: toppings.map((item) => ({
+        publicId: item.id,
+        name: item.name,
+        colorHex: item.colorHex,
+      })),
+      cakeSizes: cakeSizes.map((item) => ({
+        publicId: item.id,
+        slices: item.slices,
+        price: item.price,
+      })),
+      sweetTypes: sweetTypes.map((item) => ({
+        publicId: item.id,
+        name: item.name,
+        pricePer100: item.pricePer100,
+        flavors: item.flavors.map((flavor) => ({
+          publicId: flavor.id,
+          name: flavor.name,
+          sweetTypePublicId: flavor.sweetTypeId,
+        })),
+      })),
     };
   }
 

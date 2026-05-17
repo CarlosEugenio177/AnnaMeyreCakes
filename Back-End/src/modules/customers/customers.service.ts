@@ -188,14 +188,10 @@ export class CustomersService {
 
   private toPublicCustomer(customer: Customer) {
     return {
-      id: customer.id,
       name: customer.name,
       phone: customer.phone,
       email: customer.email,
       address: customer.address,
-      lastSeenAt: customer.lastSeenAt,
-      createdAt: customer.createdAt,
-      updatedAt: customer.updatedAt,
     };
   }
 

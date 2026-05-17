@@ -10,9 +10,14 @@
     "dev:db": "docker compose -f Back-End/docker-compose.yml up -d",
     "dev:full": "npm run dev:db && npm run dev",
     "build": "npm --prefix Back-End run build && npm --prefix Front-End run build",
-    "test": "npm --prefix Back-End test"
+    "test": "npm --prefix Back-End test",
+    "test:e2e": "playwright test tests/e2e",
+    "test:e2e:ui": "playwright test --ui",
+    "test:regression": "playwright test tests/regression",
+    "test:all": "npm test && npm run test:e2e && npm run test:regression"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "concurrently": "^9.2.1"
   }
 }

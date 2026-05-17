@@ -22,6 +22,11 @@ export class CatalogController {
     return this.catalogService.getCatalog();
   }
 
+  @Get('api/public/catalog')
+  getPublicCatalog() {
+    return this.catalogService.getCatalog();
+  }
+
   @Get('admin/options')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER, UserRole.ADMIN)

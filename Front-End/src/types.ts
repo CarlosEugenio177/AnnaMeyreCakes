@@ -144,7 +144,7 @@ export type AdminOrder = {
 };
 
 export type CustomerProfile = {
-  id: string;
+  id?: string;
   name: string;
   phone: string;
   email?: string | null;
