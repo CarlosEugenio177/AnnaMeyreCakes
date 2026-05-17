@@ -3,24 +3,15 @@ import {
   ArrayMaxSize,
   IsArray,
   IsISO8601,
-  IsNotEmpty,
   IsOptional,
   IsString,
-  MinLength,
   ValidateNested,
 } from 'class-validator';
+import { CustomerContactDto } from '../../customers/dto/customer-contact.dto';
 import { CreateCakeOrderDto } from './create-cake-order.dto';
 import { CreateSweetOrderDto } from './create-sweet-order.dto';
 
-export class CreateOrderDto {
-  @IsString()
-  @IsNotEmpty()
-  customerName!: string;
-
-  @IsString()
-  @MinLength(8)
-  customerPhone!: string;
-
+export class CreateOrderDto extends CustomerContactDto {
   @IsISO8601()
   desiredDate!: string;
 

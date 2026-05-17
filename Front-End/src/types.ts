@@ -10,6 +10,10 @@ export type OrderStatus =
   | 'DELIVERED'
   | 'CANCELED';
 
+export type PaymentMethod = 'PIX' | 'CASH' | 'CARD' | 'BANK_TRANSFER' | 'OTHER';
+
+export type PaymentStatus = 'PENDING' | 'PAID' | 'CANCELED';
+
 export type CatalogItem = {
   id: string;
   name: string;
@@ -76,6 +80,8 @@ export type SweetSelection = {
 export type CustomerData = {
   customerName: string;
   customerPhone: string;
+  customerEmail?: string;
+  customerAddress?: string;
   desiredDate: string;
   notes?: string;
 };
@@ -120,6 +126,12 @@ export type AdminOrder = {
   remainingPrice: string | number;
   desiredDate: string;
   notes?: string | null;
+  contactSnapshot?: {
+    name?: string;
+    phone?: string;
+    email?: string | null;
+    address?: string | null;
+  };
   whatsappMessage?: string | null;
   customer: {
     id: string;
@@ -127,7 +139,43 @@ export type AdminOrder = {
     phone: string;
   };
   items: OrderItem[];
+  payments: PaymentRecord[];
   createdAt: string;
+};
+
+export type CustomerProfile = {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string | null;
+  address?: string | null;
+  lastSeenAt: string;
+};
+
+export type CustomerOrder = AdminOrder & {
+  contactSnapshot?: {
+    name?: string;
+    phone?: string;
+    email?: string | null;
+    address?: string | null;
+  };
+};
+
+export type PaymentRecord = {
+  id: string;
+  orderId: string;
+  amount: string | number;
+  paymentMethod: PaymentMethod;
+  status: PaymentStatus;
+  paidAt?: string | null;
+  createdAt: string;
+};
+
+export type CreatePaymentPayload = {
+  amount: number;
+  paymentMethod: PaymentMethod;
+  status?: PaymentStatus;
+  paidAt?: string;
 };
 
 export type LoginResponse = {

@@ -25,6 +25,11 @@ describe('OrdersService', () => {
     getSettings: jest.fn(),
   };
 
+  const customersService = {
+    upsertFromContact: jest.fn(),
+    toContactSnapshot: jest.fn(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     prisma.$transaction.mockImplementation((input: unknown) => {
@@ -41,7 +46,11 @@ describe('OrdersService', () => {
   });
 
   function makeService() {
-    return new OrdersService(prisma as never, settingsService as never);
+    return new OrdersService(
+      prisma as never,
+      settingsService as never,
+      customersService as never,
+    );
   }
 
   function validOrderDto() {
@@ -198,6 +207,13 @@ describe('OrdersService', () => {
       storeStatus: StoreStatus.OPEN,
       whatsappNumber: '5511999999999',
     });
+    customersService.upsertFromContact.mockResolvedValue({ id: 'customer-id' });
+    customersService.toContactSnapshot.mockReturnValue({
+      name: dto.customerName,
+      phone: dto.customerPhone,
+      email: null,
+      address: null,
+    });
     prisma.order.findUnique.mockResolvedValue(null);
     mockActiveCakeCatalog();
     mockSweetCatalog();
@@ -218,6 +234,13 @@ describe('OrdersService', () => {
     expect(createArgs.data.totalPrice.toNumber()).toBe(240);
     expect(createArgs.data.depositPrice.toNumber()).toBe(120);
     expect(createArgs.data.remainingPrice.toNumber()).toBe(120);
+    expect(createArgs.data.customerId).toBe('customer-id');
+    expect(createArgs.data.contactSnapshot).toEqual({
+      name: dto.customerName,
+      phone: dto.customerPhone,
+      email: null,
+      address: null,
+    });
     expect(result.whatsapp.number).toBe('5511999999999');
     expect(result.whatsapp.link).toContain('https://wa.me/5511999999999');
   });

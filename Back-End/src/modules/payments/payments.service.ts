@@ -1,21 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 import { toDecimal } from '../../common/utils/money';
 import { PrismaService } from '../../prisma/prisma.service';
-import { OrdersService } from '../orders/orders.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Injectable()
 export class PaymentsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly ordersService: OrdersService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async createPayment(orderId: string, dto: CreatePaymentDto) {
-    await this.ordersService.ensureOrderExists(orderId);
-
     return this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        select: { depositPrice: true },
+      });
+
+      if (!order) {
+        throw new NotFoundException('Pedido não encontrado');
+      }
+
       const payment = await tx.paymentRecord.create({
         data: {
           orderId,
@@ -32,10 +35,18 @@ export class PaymentsService {
       });
 
       if (payment.status === PaymentStatus.PAID) {
-        await tx.order.update({
-          where: { id: orderId },
-          data: { status: OrderStatus.DEPOSIT_PAID },
+        const paidPayments = await tx.paymentRecord.aggregate({
+          where: { orderId, status: PaymentStatus.PAID },
+          _sum: { amount: true },
         });
+        const paidAmount = paidPayments._sum.amount ?? toDecimal(0);
+
+        if (paidAmount.greaterThanOrEqualTo(order.depositPrice)) {
+          await tx.order.update({
+            where: { id: orderId },
+            data: { status: OrderStatus.DEPOSIT_PAID },
+          });
+        }
       }
 
       return payment;

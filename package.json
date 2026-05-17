@@ -1,0 +1,18 @@
+{
+  "name": "anna-meyre-cakes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fullstack workspace for Anna Meyre Cakes.",
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail -n BACK,FRONT -c blue,magenta \"npm run dev:back\" \"npm run dev:front\"",
+    "dev:back": "npm --prefix Back-End run start:dev",
+    "dev:front": "npm --prefix Front-End run dev -- --host 0.0.0.0 --port 5173 --clearScreen false",
+    "dev:db": "docker compose -f Back-End/docker-compose.yml up -d",
+    "dev:full": "npm run dev:db && npm run dev",
+    "build": "npm --prefix Back-End run build && npm --prefix Front-End run build",
+    "test": "npm --prefix Back-End test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

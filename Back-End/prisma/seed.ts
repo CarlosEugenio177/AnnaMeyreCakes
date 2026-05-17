@@ -22,9 +22,14 @@ const ids = {
 };
 
 async function main() {
-  await prisma.settings.deleteMany();
-  await prisma.settings.create({
-    data: {
+  await prisma.settings.upsert({
+    where: { key: 'global' },
+    update: {
+      whatsappNumber: process.env.SEED_WHATSAPP_NUMBER ?? '5599999999999',
+      storeStatus: StoreStatus.OPEN,
+    },
+    create: {
+      key: 'global',
       whatsappNumber: process.env.SEED_WHATSAPP_NUMBER ?? '5599999999999',
       storeStatus: StoreStatus.OPEN,
     },

@@ -8,6 +8,7 @@ import { ProductType, StoreStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { decimalToNumber } from '../../common/utils/money';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CustomersService } from '../customers/customers.service';
 import { SettingsService } from '../settings/settings.service';
 import { CreateCakeOrderDto } from './dto/create-cake-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -32,6 +33,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly settingsService: SettingsService,
+    private readonly customersService: CustomersService,
   ) {}
 
   async createOrder(dto: CreateOrderDto) {
@@ -55,6 +57,8 @@ export class OrdersService {
     const depositPrice = totalPrice.div(2).toDecimalPlaces(2);
     const remainingPrice = totalPrice.minus(depositPrice).toDecimalPlaces(2);
     const orderCode = await this.generateOrderCode();
+    const customer = await this.customersService.upsertFromContact(dto);
+    const contactSnapshot = this.customersService.toContactSnapshot(dto);
     const whatsappMessage = this.buildWhatsAppMessage({
       orderCode,
       dto,
@@ -71,16 +75,9 @@ export class OrdersService {
         remainingPrice,
         desiredDate: new Date(dto.desiredDate),
         notes: dto.notes,
+        contactSnapshot,
         whatsappMessage,
-        customer: {
-          connectOrCreate: {
-            where: { phone: dto.customerPhone },
-            create: {
-              name: dto.customerName,
-              phone: dto.customerPhone,
-            },
-          },
-        },
+        customerId: customer.id,
         items: {
           create: [
             {
@@ -140,6 +137,19 @@ export class OrdersService {
       orderBy: { createdAt: 'desc' },
       include: this.orderInclude(),
     });
+  }
+
+  async getAdminOrder(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: this.orderInclude(),
+    });
+
+    if (!order) {
+      throw new NotFoundException('Pedido não encontrado');
+    }
+
+    return order;
   }
 
   async updateStatus(id: string, dto: UpdateOrderStatusDto) {

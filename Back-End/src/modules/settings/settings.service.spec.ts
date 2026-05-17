@@ -2,57 +2,41 @@ import { StoreStatus } from '@prisma/client';
 import { SettingsService } from './settings.service';
 
 describe('SettingsService', () => {
-  const tx = {
-    settings: {
-      findMany: jest.fn(),
-      create: jest.fn(),
-      deleteMany: jest.fn(),
-    },
-  };
-
   const prisma = {
     settings: {
+      upsert: jest.fn(),
       update: jest.fn(),
     },
-    $transaction: jest.fn((callback: (client: typeof tx) => unknown) =>
-      callback(tx),
-    ),
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('creates the singleton settings record when missing', async () => {
-    tx.settings.findMany.mockResolvedValue([]);
-    tx.settings.create.mockResolvedValue({
+  it('upserts the singleton settings record', async () => {
+    prisma.settings.upsert.mockResolvedValue({
       id: 'settings-id',
-      whatsappNumber: '',
+      key: 'global',
+      whatsappNumber: '5599999999999',
       storeStatus: StoreStatus.OPEN,
     });
 
     await expect(
       new SettingsService(prisma as never).getSettings(),
     ).resolves.toMatchObject({ storeStatus: StoreStatus.OPEN });
-  });
-
-  it('removes extra settings records and returns the first one', async () => {
-    tx.settings.findMany.mockResolvedValue([
-      { id: 'first' },
-      { id: 'second' },
-      { id: 'third' },
-    ]);
-
-    await expect(
-      new SettingsService(prisma as never).getSettings(),
-    ).resolves.toEqual({ id: 'first' });
-    expect(tx.settings.deleteMany).toHaveBeenCalledWith({
-      where: { id: { in: ['second', 'third'] } },
+    expect(prisma.settings.upsert).toHaveBeenCalledWith({
+      where: { key: 'global' },
+      update: {},
+      create: {
+        key: 'global',
+        whatsappNumber: process.env.DEFAULT_WHATSAPP_NUMBER ?? '',
+        storeStatus: StoreStatus.OPEN,
+      },
     });
   });
 
   it('updates only provided settings fields', async () => {
-    tx.settings.findMany.mockResolvedValue([{ id: 'settings-id' }]);
+    prisma.settings.upsert.mockResolvedValue({ id: 'settings-id' });
     prisma.settings.update.mockResolvedValue({
       id: 'settings-id',
       whatsappNumber: '5511999999999',
@@ -63,7 +47,7 @@ describe('SettingsService', () => {
     });
 
     expect(prisma.settings.update).toHaveBeenCalledWith({
-      where: { id: 'settings-id' },
+      where: { key: 'global' },
       data: { whatsappNumber: '5511999999999' },
     });
   });

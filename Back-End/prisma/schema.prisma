@@ -61,16 +61,37 @@ model User {
 }
 
 model Customer {
-  id    String @id @default(uuid())
-  name  String
-  phone String @unique
+  id         String  @id @default(uuid())
+  name       String
+  phone      String  @unique
+  email      String?
+  address    String?
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
 
-  orders Order[]
+  orders   Order[]
+  sessions CustomerSession[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("customers")
+}
+
+model CustomerSession {
+  id        String   @id @default(uuid())
+  customerId String  @map("customer_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([customerId])
+  @@index([expiresAt])
+  @@map("customer_sessions")
 }
 
 model Order {
@@ -83,6 +104,7 @@ model Order {
   remainingPrice  Decimal     @map("remaining_price") @db.Decimal(10, 2)
   desiredDate     DateTime    @map("desired_date")
   notes           String?
+  contactSnapshot Json        @map("contact_snapshot")
   whatsappMessage String?     @map("whatsapp_message")
 
   customer Customer        @relation(fields: [customerId], references: [id])
@@ -280,6 +302,7 @@ model PaymentRecord {
 
 model Settings {
   id             String      @id @default(uuid())
+  key            String      @unique @default("global")
   whatsappNumber String      @map("whatsapp_number")
   storeStatus    StoreStatus @default(OPEN) @map("store_status")
 
