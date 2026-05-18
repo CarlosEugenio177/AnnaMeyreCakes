@@ -2,8 +2,8 @@ import type { CustomerOrder, CustomerProfile } from '../types';
 import { api } from './api';
 
 export async function getCurrentCustomer() {
-  const { data } = await api.get<{ customer: CustomerProfile }>('/customer/me');
-  return data.customer;
+  const { data } = await api.get<CustomerProfile>('/customer/me');
+  return data;
 }
 
 export async function logoutCustomer() {

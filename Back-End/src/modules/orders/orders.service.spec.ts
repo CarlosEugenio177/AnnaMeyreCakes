@@ -220,6 +220,11 @@ describe('OrdersService', () => {
     prisma.order.create.mockResolvedValue({
       id: 'order-id',
       orderCode: 'AMC-20300110-1234',
+      status: 'NEW',
+      totalPrice: new Decimal(240),
+      depositPrice: new Decimal(120),
+      remainingPrice: new Decimal(120),
+      desiredDate: new Date(dto.desiredDate),
       items: [
         {
           productType: ProductType.CAKE,

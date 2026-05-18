@@ -32,10 +32,33 @@ export async function loginAdmin(request: APIRequestContext) {
   return body.accessToken as string;
 }
 
+export async function getAdminOrderByCode(request: APIRequestContext, orderCode: string) {
+  const token = await loginAdmin(request);
+  const response = await request.get('/admin/orders', {
+    headers: authHeaders(token),
+  });
+
+  expect(response.ok()).toBeTruthy();
+  const orders = await response.json();
+  const order = orders.find((candidate: { orderCode?: string }) => candidate.orderCode === orderCode);
+  expect(order, `Expected admin order with code ${orderCode}`).toBeTruthy();
+  return order;
+}
+
 export function authHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`,
   };
+}
+
+export async function ensureStoreOpen(request: APIRequestContext) {
+  const token = await loginAdmin(request);
+  const response = await request.patch('/admin/settings', {
+    headers: authHeaders(token),
+    data: { storeStatus: 'OPEN' },
+  });
+
+  expect(response.ok()).toBeTruthy();
 }
 
 export function numberValue(value: string | number) {

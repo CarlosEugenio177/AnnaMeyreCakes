@@ -3,7 +3,13 @@ import type { Catalog, SweetSelection } from '../types';
 export const currency = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
+
+export function formatCurrency(value: string | number | undefined) {
+  return currency.format(toNumber(value));
+}
 
 export function toNumber(value: string | number | undefined) {
   if (typeof value === 'number') {

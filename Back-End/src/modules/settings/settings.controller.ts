@@ -14,7 +14,7 @@ export class SettingsController {
 
   @Get()
   getSettings() {
-    return this.settingsService.getSettings();
+    return this.settingsService.getAdminSettings();
   }
 
   @Patch()
@@ -31,6 +31,6 @@ export class ApiAdminSettingsController {
 
   @Get()
   getSettings() {
-    return this.settingsService.getSettings();
+    return this.settingsService.getAdminSettings();
   }
 }

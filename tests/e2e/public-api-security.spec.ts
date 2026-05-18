@@ -47,23 +47,25 @@ test.describe('public API contract security', () => {
     const { response, payload } = await createCustomerOrder(context);
     expect(response.ok()).toBeTruthy();
 
-    const meResponse = await context.get('/api/customer/me');
-    expect(meResponse.ok()).toBeTruthy();
-    const body = await meResponse.json();
+    for (const endpoint of ['/api/customer/me', '/customer/me']) {
+      const meResponse = await context.get(endpoint);
+      expect(meResponse.ok(), endpoint).toBeTruthy();
+      const body = await meResponse.json();
 
-    assertNoForbiddenFields(body, {
-      allowedFields: [
-        'phone',
-        'email',
-        'address',
-      ],
-    });
-    expect(body).toEqual({
-      name: payload.customerName,
-      phone: payload.customerPhone.replace(/\D/g, ''),
-      email: payload.customerEmail,
-      address: payload.customerAddress,
-    });
+      assertNoForbiddenFields(body, {
+        allowedFields: [
+          'phone',
+          'email',
+          'address',
+        ],
+      });
+      expect(body).toEqual({
+        name: payload.customerName,
+        phone: payload.customerPhone.replace(/\D/g, ''),
+        email: payload.customerEmail,
+        address: payload.customerAddress,
+      });
+    }
 
     await context.dispose();
   });
@@ -76,5 +78,10 @@ test.describe('public API contract security', () => {
       const body = await response.json().catch(() => ({}));
       assertNoForbiddenFields(body);
     }
+
+    const bulkResponse = await request.patch('/api/admin/orders/status', {
+      data: { orderIds: ['blocked'], status: 'IN_PRODUCTION' },
+    });
+    expect([401, 403]).toContain(bulkResponse.status());
   });
 });

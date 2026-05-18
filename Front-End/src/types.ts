@@ -66,7 +66,6 @@ export type Catalog = {
 };
 
 export type Settings = {
-  id?: string;
   whatsappNumber: string;
   storeStatus: StoreStatus;
 };
@@ -152,13 +151,15 @@ export type CustomerProfile = {
   lastSeenAt: string;
 };
 
-export type CustomerOrder = AdminOrder & {
-  contactSnapshot?: {
-    name?: string;
-    phone?: string;
-    email?: string | null;
-    address?: string | null;
-  };
+export type CustomerOrder = {
+  publicId: string;
+  orderCode: string;
+  status: OrderStatus;
+  totalPrice: string | number;
+  depositPrice: string | number;
+  remainingPrice: string | number;
+  desiredDate: string;
+  notes?: string | null;
 };
 
 export type PaymentRecord = {

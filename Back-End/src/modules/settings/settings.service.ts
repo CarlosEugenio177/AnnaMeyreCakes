@@ -22,16 +22,19 @@ export class SettingsService {
   async getPublicSettings() {
     const settings = await this.getSettings();
 
-    return {
-      whatsappNumber: settings.whatsappNumber,
-      storeStatus: settings.storeStatus,
-    };
+    return this.toSettingsDto(settings);
   }
 
-  async updateSettings(dto: UpdateSettingsDto): Promise<Settings> {
+  async getAdminSettings() {
+    const settings = await this.getSettings();
+
+    return this.toSettingsDto(settings);
+  }
+
+  async updateSettings(dto: UpdateSettingsDto) {
     await this.getSettings();
 
-    return this.prisma.settings.update({
+    const settings = await this.prisma.settings.update({
       where: { key: 'global' },
       data: {
         ...(dto.whatsappNumber !== undefined
@@ -40,5 +43,14 @@ export class SettingsService {
         ...(dto.storeStatus !== undefined ? { storeStatus: dto.storeStatus } : {}),
       },
     });
+
+    return this.toSettingsDto(settings);
+  }
+
+  private toSettingsDto(settings: Pick<Settings, 'whatsappNumber' | 'storeStatus'>) {
+    return {
+      whatsappNumber: settings.whatsappNumber,
+      storeStatus: settings.storeStatus,
+    };
   }
 }

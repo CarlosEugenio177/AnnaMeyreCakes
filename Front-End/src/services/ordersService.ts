@@ -3,8 +3,13 @@ import { api } from './api';
 
 type CreateOrderResponse = {
   order: {
-    id: string;
+    publicId: string;
     orderCode: string;
+    status: string;
+    totalPrice: string | number;
+    depositPrice: string | number;
+    remainingPrice: string | number;
+    desiredDate: string;
   };
   whatsapp: {
     number: string;

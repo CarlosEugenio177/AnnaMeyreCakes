@@ -5,6 +5,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { CustomersService } from '../customers/customers.service';
+import { BulkUpdateOrderStatusDto } from './dto/bulk-update-order-status.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrdersService } from './orders.service';
@@ -24,7 +25,10 @@ export class OrdersController {
     const result = await this.ordersService.createOrder(dto);
     const token = await this.customersService.createSession(result.order.customerId);
     this.customersService.setSessionCookie(response, token);
-    return result;
+    return {
+      order: result.publicOrder,
+      whatsapp: result.whatsapp,
+    };
   }
 
   @Get('admin/orders')
@@ -53,5 +57,12 @@ export class OrdersController {
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
     return this.ordersService.updateStatus(id, dto);
+  }
+
+  @Patch(['admin/orders/status', 'api/admin/orders/status'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
+  bulkUpdateStatus(@Body() dto: BulkUpdateOrderStatusDto) {
+    return this.ordersService.bulkUpdateStatus(dto);
   }
 }

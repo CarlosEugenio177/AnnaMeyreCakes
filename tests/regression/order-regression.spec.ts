@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { authHeaders, getPublicCatalog, loginAdmin } from '../helpers/api-fixtures';
+import { authHeaders, getAdminOrderByCode, getPublicCatalog, loginAdmin } from '../helpers/api-fixtures';
 import { makeOrderPayload } from '../helpers/order-fixtures';
 
 test.describe('order and session regression', () => {
@@ -18,7 +18,7 @@ test.describe('order and session regression', () => {
     });
     const firstResponse = await request.post('/orders', { data: firstPayload });
     expect(firstResponse.ok()).toBeTruthy();
-    const firstOrder = (await firstResponse.json()).order;
+    const firstPublicOrder = (await firstResponse.json()).order;
 
     const secondPayload = makeOrderPayload(catalog, {
       customerName: 'Cliente Snapshot Novo',
@@ -28,7 +28,9 @@ test.describe('order and session regression', () => {
     });
     const secondResponse = await request.post('/orders', { data: secondPayload });
     expect(secondResponse.ok()).toBeTruthy();
-    const secondOrder = (await secondResponse.json()).order;
+    const secondPublicOrder = (await secondResponse.json()).order;
+    const firstOrder = await getAdminOrderByCode(request, firstPublicOrder.orderCode);
+    const secondOrder = await getAdminOrderByCode(request, secondPublicOrder.orderCode);
 
     expect(firstOrder.customerId).toBe(secondOrder.customerId);
     expect(secondOrder.customer.name).toBe('Cliente Snapshot Novo');

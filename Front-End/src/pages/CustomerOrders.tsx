@@ -50,7 +50,7 @@ export function CustomerOrders({ navigate }: CustomerOrdersProps) {
 
         <div className="space-y-4">
           {orders.map((order) => (
-            <article key={order.id} className="rounded-[22px] border border-line bg-white/85 p-5 shadow-[0_12px_34px_rgba(138,75,62,0.05)]">
+            <article key={order.publicId} className="rounded-[22px] border border-line bg-white/85 p-5 shadow-[0_12px_34px_rgba(138,75,62,0.05)]">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">{order.orderCode}</p>

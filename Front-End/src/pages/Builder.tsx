@@ -131,10 +131,10 @@ export function Builder({ navigate }: BuilderProps) {
       });
       await loadCustomer();
       order.resetOrder();
-      const whatsappTab = window.open(response.whatsapp.link, '_blank', 'noopener,noreferrer');
+      const whatsappTab = window.open(response.whatsapp.link, '_blank');
 
       if (!whatsappTab) {
-        window.location.assign(response.whatsapp.link);
+        setFormError('Pedido criado. Permita pop-ups para abrir o WhatsApp em uma nova aba.');
       }
     } catch (error) {
       setFormError(getApiErrorMessage(error));

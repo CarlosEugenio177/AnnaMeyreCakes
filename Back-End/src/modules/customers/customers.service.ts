@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Customer, Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { createHash, randomBytes } from 'crypto';
 import { Request, Response } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -127,16 +128,18 @@ export class CustomersService {
   }
 
   async getOrders(customerId: string) {
-    return this.prisma.order.findMany({
+    const orders = await this.prisma.order.findMany({
       where: { customerId },
       orderBy: { createdAt: 'desc' },
       include: this.orderInclude(),
     });
+
+    return orders.map((order) => this.toCustomerOrder(order));
   }
 
   async getOrder(customerId: string, id: string) {
     const order = await this.prisma.order.findFirst({
-      where: { id, customerId },
+      where: { customerId, OR: [{ id }, { orderCode: id }] },
       include: this.orderInclude(),
     });
 
@@ -144,11 +147,19 @@ export class CustomersService {
       throw new NotFoundException('Pedido nao encontrado');
     }
 
-    return order;
+    return this.toCustomerOrder(order);
   }
 
   async getReorderPayload(customerId: string, id: string) {
-    const order = await this.getOrder(customerId, id);
+    const order = await this.prisma.order.findFirst({
+      where: { customerId, OR: [{ id }, { orderCode: id }] },
+      include: this.orderInclude(),
+    });
+
+    if (!order) {
+      throw new NotFoundException('Pedido nao encontrado');
+    }
+
     const cakeItem = order.items.find((item) => item.cakeDetail);
     const sweetItems = order.items.filter((item) => item.sweetDetail);
 
@@ -192,6 +203,27 @@ export class CustomersService {
       phone: customer.phone,
       email: customer.email,
       address: customer.address,
+    };
+  }
+
+  private toCustomerOrder(order: {
+    orderCode: string;
+    status: string;
+    totalPrice: Decimal;
+    depositPrice: Decimal;
+    remainingPrice: Decimal;
+    desiredDate: Date;
+    notes: string | null;
+  }) {
+    return {
+      publicId: order.orderCode,
+      orderCode: order.orderCode,
+      status: order.status,
+      totalPrice: order.totalPrice.toNumber(),
+      depositPrice: order.depositPrice.toNumber(),
+      remainingPrice: order.remainingPrice.toNumber(),
+      desiredDate: order.desiredDate.toISOString(),
+      notes: order.notes,
     };
   }
 

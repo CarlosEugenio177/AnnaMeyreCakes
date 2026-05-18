@@ -21,6 +21,14 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
   return data;
 }
 
+export async function updateOrderStatusesBulk(orderIds: string[], status: OrderStatus) {
+  const { data } = await api.patch<{ updatedCount: number; orders: AdminOrder[] }>('/api/admin/orders/status', {
+    orderIds,
+    status,
+  });
+  return data;
+}
+
 export async function createPayment(id: string, payload: CreatePaymentPayload) {
   const { data } = await api.post<PaymentRecord>(`/admin/orders/${id}/payments`, payload);
   return data;

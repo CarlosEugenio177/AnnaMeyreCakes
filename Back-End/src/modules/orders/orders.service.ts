@@ -13,6 +13,7 @@ import { SettingsService } from '../settings/settings.service';
 import { CreateCakeOrderDto } from './dto/create-cake-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateSweetOrderDto } from './dto/create-sweet-order.dto';
+import { BulkUpdateOrderStatusDto } from './dto/bulk-update-order-status.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 type CalculatedCake = {
@@ -122,6 +123,7 @@ export class OrdersService {
 
     return {
       order,
+      publicOrder: this.toPublicOrder(order),
       whatsapp: {
         number: settings.whatsappNumber,
         message: whatsappMessage,
@@ -160,6 +162,35 @@ export class OrdersService {
       data: { status: dto.status },
       include: this.orderInclude(),
     });
+  }
+
+  async bulkUpdateStatus(dto: BulkUpdateOrderStatusDto) {
+    const uniqueIds = [...new Set(dto.orderIds)];
+
+    const existingOrders = await this.prisma.order.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true },
+    });
+
+    if (existingOrders.length !== uniqueIds.length) {
+      throw new NotFoundException('Um ou mais pedidos nao foram encontrados');
+    }
+
+    await this.prisma.order.updateMany({
+      where: { id: { in: uniqueIds } },
+      data: { status: dto.status },
+    });
+
+    const orders = await this.prisma.order.findMany({
+      where: { id: { in: uniqueIds } },
+      orderBy: { createdAt: 'desc' },
+      include: this.orderInclude(),
+    });
+
+    return {
+      updatedCount: orders.length,
+      orders,
+    };
   }
 
   async ensureOrderExists(id: string): Promise<void> {
@@ -326,6 +357,25 @@ export class OrdersService {
       '',
       `Observacoes: ${dto.notes ?? 'Sem observacoes'}`,
     ].join('\n');
+  }
+
+  private toPublicOrder(order: {
+    orderCode: string;
+    status: string;
+    totalPrice: Decimal;
+    depositPrice: Decimal;
+    remainingPrice: Decimal;
+    desiredDate: Date;
+  }) {
+    return {
+      publicId: order.orderCode,
+      orderCode: order.orderCode,
+      status: order.status,
+      totalPrice: decimalToNumber(order.totalPrice),
+      depositPrice: decimalToNumber(order.depositPrice),
+      remainingPrice: decimalToNumber(order.remainingPrice),
+      desiredDate: order.desiredDate.toISOString(),
+    };
   }
 
   private orderInclude() {

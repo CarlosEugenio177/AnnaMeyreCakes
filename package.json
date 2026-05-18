@@ -13,8 +13,10 @@
     "test": "npm --prefix Back-End test",
     "test:e2e": "playwright test tests/e2e",
     "test:e2e:ui": "playwright test --ui",
+    "test:api": "playwright test tests/e2e/public-api-security.spec.ts tests/security",
     "test:regression": "playwright test tests/regression",
-    "test:all": "npm test && npm run test:e2e && npm run test:regression"
+    "test:security": "playwright test tests/e2e/public-api-security.spec.ts tests/security",
+    "test:all": "npm test && npm run test:e2e && npm run test:regression && npm run test:security"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

@@ -1,7 +1,8 @@
 import type { APIRequestContext } from '@playwright/test';
-import { futureIsoDate, getPublicCatalog, type PublicCatalog } from './api-fixtures';
+import { ensureStoreOpen, futureIsoDate, getPublicCatalog, type PublicCatalog } from './api-fixtures';
 
 export async function createCustomerOrder(request: APIRequestContext, suffix = Date.now().toString()) {
+  await ensureStoreOpen(request);
   const catalog = await getPublicCatalog(request);
 
   const payload = {

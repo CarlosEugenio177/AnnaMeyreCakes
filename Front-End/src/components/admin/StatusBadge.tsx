@@ -8,5 +8,5 @@ type StatusBadgeProps = {
 
 export function StatusBadge({ status }: StatusBadgeProps) {
   const tone = status === 'CANCELED' ? 'gray' : status === 'DELIVERED' || status === 'READY' ? 'green' : 'rose';
-  return <Badge tone={tone}>{statusLabels[status]}</Badge>;
+  return <Badge tone={tone} className="min-w-[92px] justify-center">{statusLabels[status]}</Badge>;
 }
