@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, CreditCard, Mail, MapPin, MessageCircle, NotebookPen, Package, UserRound } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CheckCircle2, CreditCard, Mail, MapPin, MessageCircle, NotebookPen, Package, UserRound } from 'lucide-react';
 import { adminPath } from '../../config/admin';
 import { useEffect, useState, type FormEvent } from 'react';
 import { AdminCard } from '../../components/admin/AdminCard';
@@ -55,6 +55,25 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
       setOrder(await updateOrderStatus(order.id, status));
     } catch (error) {
       setStatusError(getApiErrorMessage(error));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // Atalho: registra a entrada (50%) como paga via Pix. O backend move o pedido
+  // para "Entrada paga" automaticamente.
+  async function confirmPixDeposit() {
+    if (!order) {
+      return;
+    }
+
+    setIsSaving(true);
+    setPaymentError(undefined);
+    try {
+      await createPayment(order.id, { amount: toNumber(order.depositPrice), paymentMethod: 'PIX', status: 'PAID' });
+      setOrder(await getAdminOrder(order.id));
+    } catch (error) {
+      setPaymentError(getApiErrorMessage(error));
     } finally {
       setIsSaving(false);
     }
@@ -214,7 +233,19 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
                 )}
               </div>
 
-              <form className="mt-5 space-y-3" onSubmit={handlePaymentSubmit}>
+              {order.status === 'NEW' || order.status === 'WAITING_DEPOSIT' ? (
+                <div className="mt-5 rounded-2xl border-2 border-dashed border-butter bg-[#FFFBF2] p-4">
+                  <p className="text-sm font-bold text-choco">A entrada caiu no Pix?</p>
+                  <p className="mt-0.5 text-xs text-muted">Confira o extrato e confirme. O pedido passa para "Entrada paga".</p>
+                  <Button type="button" className="mt-3 w-full" disabled={isSaving} onClick={() => void confirmPixDeposit()} data-testid="confirm-pix-deposit">
+                    <CheckCircle2 className="h-4 w-4" aria-hidden />
+                    Confirmar entrada de {currency.format(toNumber(order.depositPrice))}
+                  </Button>
+                </div>
+              ) : null}
+
+              <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-muted">Outro pagamento</p>
+              <form className="mt-2 space-y-3" onSubmit={handlePaymentSubmit}>
                 <input
                   className="min-h-12 w-full rounded-[18px] border border-line bg-white px-4 font-semibold text-cocoa outline-none focus:border-brand"
                   inputMode="decimal"

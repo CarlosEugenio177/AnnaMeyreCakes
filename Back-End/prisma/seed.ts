@@ -27,11 +27,13 @@ async function main() {
     update: {
       whatsappNumber: process.env.SEED_WHATSAPP_NUMBER ?? '5599999999999',
       storeStatus: StoreStatus.OPEN,
+      ...pixSettings(),
     },
     create: {
       key: 'global',
       whatsappNumber: process.env.SEED_WHATSAPP_NUMBER ?? '5599999999999',
       storeStatus: StoreStatus.OPEN,
+      ...pixSettings(),
     },
   });
 
@@ -139,6 +141,15 @@ async function main() {
     'uvinha',
     'brigadeiro meio amargo',
   ]);
+}
+
+// Pix opcional no seed: so aplica os campos informados (nao apaga o que ja foi configurado no painel).
+function pixSettings() {
+  return {
+    ...(process.env.SEED_PIX_KEY ? { pixKey: process.env.SEED_PIX_KEY } : {}),
+    ...(process.env.SEED_PIX_MERCHANT_NAME ? { pixMerchantName: process.env.SEED_PIX_MERCHANT_NAME } : {}),
+    ...(process.env.SEED_PIX_MERCHANT_CITY ? { pixMerchantCity: process.env.SEED_PIX_MERCHANT_CITY } : {}),
+  };
 }
 
 function requireEnv(name: string): string {

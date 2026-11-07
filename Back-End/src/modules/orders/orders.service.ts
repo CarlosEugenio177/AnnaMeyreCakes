@@ -72,6 +72,11 @@ export class OrdersService {
     const depositPrice = totalPrice.div(2).toDecimalPlaces(2);
     const remainingPrice = totalPrice.minus(depositPrice).toDecimalPlaces(2);
     const orderCode = await this.generateOrderCode();
+    const pix = this.settingsService.buildPixCharge(
+      settings,
+      decimalToNumber(depositPrice),
+      orderCode,
+    );
     const customer = await this.customersService.upsertFromContact(dto);
     const contactSnapshot = this.customersService.toContactSnapshot(dto);
     const whatsappMessage = this.buildWhatsAppMessage({
@@ -79,6 +84,7 @@ export class OrdersService {
       dto,
       cake: calculatedCake,
       sweets: calculatedSweets,
+      pixKey: pix?.key,
       totalPrice,
       depositPrice,
       remainingPrice,
@@ -140,6 +146,7 @@ export class OrdersService {
     return {
       order,
       publicOrder: this.toPublicOrder(order),
+      pix,
       whatsapp: {
         number: settings.whatsappNumber,
         message: whatsappMessage,
@@ -386,11 +393,12 @@ export class OrdersService {
     dto: CreateOrderDto;
     cake: CalculatedCake;
     sweets: CalculatedSweet[];
+    pixKey?: string;
     totalPrice: Decimal;
     depositPrice: Decimal;
     remainingPrice: Decimal;
   }): string {
-    const { orderCode, dto, cake, sweets, totalPrice, depositPrice, remainingPrice } =
+    const { orderCode, dto, cake, sweets, pixKey, totalPrice, depositPrice, remainingPrice } =
       params;
     const sweetLines =
       sweets.length > 0
@@ -422,6 +430,9 @@ export class OrdersService {
       `Valor total: R$ ${decimalToNumber(totalPrice).toFixed(2)}`,
       `Entrada 50%: R$ ${decimalToNumber(depositPrice).toFixed(2)}`,
       `Restante: R$ ${decimalToNumber(remainingPrice).toFixed(2)}`,
+      ...(pixKey
+        ? [`Entrada via Pix (copia e cola gerado no site). Chave: ${pixKey}`]
+        : []),
       '',
       `Observacoes: ${dto.notes ?? 'Sem observacoes'}`,
     ].join('\n');

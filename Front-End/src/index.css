@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  color: #4a2c23;
-  background: #fbf7f2;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #2a1712;
+  background: #fff7ec;
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -18,7 +18,7 @@
 
 html {
   min-height: 100%;
-  background: #fbf7f2;
+  background: #fff7ec;
 }
 
 body {
@@ -38,10 +38,42 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid #d72651;
+  outline: 2px solid #db3a63;
   outline-offset: 2px;
 }
 
 #root {
   min-height: 100vh;
+}
+
+@layer utilities {
+  /* Granulados decorativos (puro CSS, sem imagens). */
+  .sprinkles {
+    background-image:
+      radial-gradient(circle at 12% 18%, #f7c873 0 3px, transparent 3.5px),
+      radial-gradient(circle at 78% 12%, #db3a63 0 3px, transparent 3.5px),
+      radial-gradient(circle at 34% 72%, #ffffff 0 2.5px, transparent 3px),
+      radial-gradient(circle at 88% 64%, #f7c873 0 2.5px, transparent 3px),
+      radial-gradient(circle at 56% 38%, #f49ab0 0 3px, transparent 3.5px),
+      radial-gradient(circle at 22% 92%, #db3a63 0 2.5px, transparent 3px);
+    background-size: 180px 180px;
+  }
+
+  .sprinkles-soft {
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(247, 200, 115, 0.55) 0 3px, transparent 3.5px),
+      radial-gradient(circle at 78% 12%, rgba(219, 58, 99, 0.35) 0 3px, transparent 3.5px),
+      radial-gradient(circle at 56% 58%, rgba(244, 154, 176, 0.45) 0 3px, transparent 3.5px),
+      radial-gradient(circle at 30% 80%, rgba(247, 200, 115, 0.45) 0 2.5px, transparent 3px);
+    background-size: 220px 220px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

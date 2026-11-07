@@ -23,6 +23,7 @@ describe('OrdersService', () => {
 
   const settingsService = {
     getSettings: jest.fn(),
+    buildPixCharge: jest.fn().mockReturnValue(null),
   };
 
   const customersService = {

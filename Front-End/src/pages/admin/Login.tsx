@@ -42,12 +42,12 @@ export function Login({ navigate }: LoginProps) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-cream px-5 py-10 text-cocoa">
+    <main className="sprinkles flex min-h-screen items-center justify-center bg-choco px-5 py-10 text-choco">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center text-center">
           <Logo compact />
-          <h1 className="mt-5 font-display text-2xl font-semibold">Entrar</h1>
-          <p className="mt-1 text-sm text-muted">Acesso restrito à equipe.</p>
+          <h1 className="mt-5 font-display text-4xl text-cream">Entrar</h1>
+          <p className="mt-1 text-sm text-cream/60">Acesso restrito à equipe.</p>
         </div>
         <Card className="mt-6">
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -69,12 +69,12 @@ export function Login({ navigate }: LoginProps) {
 }
 
 const inputClassName =
-  'min-h-12 w-full rounded-xl border border-line bg-surface px-4 text-sm text-cocoa outline-none transition focus:border-cocoa/40 focus:ring-2 focus:ring-blush';
+  'min-h-12 w-full rounded-2xl border-2 border-line bg-cream/60 px-4 text-sm text-choco outline-none transition focus:border-choco/40 focus:bg-surface';
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium">{label}</span>
+      <span className="mb-1.5 block text-sm font-bold">{label}</span>
       {children}
       {error ? <span className="mt-1 block text-xs font-medium text-brand">{error}</span> : null}
     </label>

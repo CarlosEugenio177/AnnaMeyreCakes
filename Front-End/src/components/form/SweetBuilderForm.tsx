@@ -40,7 +40,7 @@ export function SweetBuilderForm({ catalog, sweets, onChange }: SweetBuilderForm
 
   return (
     <Card>
-      <StepHeader step={6} title="Docinhos" hint="Opcional. Complete a festa com 30, 50 ou 100 unidades." />
+      <StepHeader step={5} title="Docinhos" hint="Opcional. Brigadeiros e companhia para completar a mesa." />
 
       <div className="space-y-4">
         {sweets.map((sweet, index) => {
@@ -48,7 +48,7 @@ export function SweetBuilderForm({ catalog, sweets, onChange }: SweetBuilderForm
           const maxFlavors = getMaxSweetFlavors(sweet.quantity);
 
           return (
-            <div key={index} className="space-y-4 rounded-2xl bg-cream p-4">
+            <div key={index} className="space-y-4 rounded-3xl bg-cream p-4 sm:p-5">
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {catalog.sweetTypes.map((item) => (
                   <OptionCard
@@ -65,7 +65,7 @@ export function SweetBuilderForm({ catalog, sweets, onChange }: SweetBuilderForm
 
               <div>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Quantidade</p>
-                <div className="inline-flex rounded-full border border-line bg-surface p-1">
+                <div className="inline-flex rounded-full border-2 border-line bg-surface p-1">
                   {sweetQuantities.map((quantity) => (
                     <button
                       key={quantity}
@@ -75,7 +75,7 @@ export function SweetBuilderForm({ catalog, sweets, onChange }: SweetBuilderForm
                         updateSweet(index, { quantity, sweetFlavorIds: sweet.sweetFlavorIds.slice(0, getMaxSweetFlavors(quantity)) })
                       }
                       className={`min-h-9 rounded-full px-4 text-sm font-semibold transition ${
-                        quantity === sweet.quantity ? 'bg-cocoa text-white' : 'text-cocoa hover:bg-blush'
+                        quantity === sweet.quantity ? 'bg-choco text-cream' : 'text-choco hover:bg-blush'
                       }`}
                     >
                       {quantity} un.
@@ -101,8 +101,8 @@ export function SweetBuilderForm({ catalog, sweets, onChange }: SweetBuilderForm
                           aria-pressed={selected}
                           disabled={disabled}
                           onClick={() => toggleFlavor(index, flavor.id)}
-                          className={`min-h-9 rounded-full border px-3.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                            selected ? 'border-brand bg-brand text-white' : 'border-line bg-surface text-cocoa hover:border-cocoa/30'
+                          className={`min-h-10 rounded-full border-2 px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                            selected ? 'border-brand bg-brand text-white' : 'border-line bg-surface text-choco hover:border-choco/30'
                           }`}
                         >
                           {flavor.name}

@@ -4,11 +4,11 @@
   "private": true,
   "description": "Anna Meyre Cakes: frontend React/Vite e API NestJS, publicados juntos na Vercel.",
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail -n BACK,FRONT -c blue,magenta \"npm run dev:back\" \"npm run dev:front\"",
-    "dev:back": "npm --prefix Back-End run start:dev",
+    "setup": "node scripts/setup.mjs",
+    "dev": "concurrently --kill-others-on-fail -n DB,BACK,FRONT -c green,blue,magenta \"npm run dev:db\" \"npm run dev:back\" \"npm run dev:front\"",
+    "dev:db": "node scripts/db.mjs",
+    "dev:back": "node scripts/wait-for-db.mjs && npm --prefix Back-End run start:dev",
     "dev:front": "npm --prefix Front-End run dev -- --port 5173 --clearScreen false",
-    "dev:db": "docker compose -f Back-End/docker-compose.yml up -d",
-    "dev:full": "npm run dev:db && npm run dev",
     "build": "npm --prefix Back-End run build && npm --prefix Front-End run build",
     "test": "npm --prefix Back-End test",
     "test:e2e": "playwright test tests/e2e",
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "embedded-postgres": "^17.5.0-beta.15"
   }
 }

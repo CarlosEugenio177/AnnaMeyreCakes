@@ -1,8 +1,8 @@
 import { BarChart3, ClipboardList, LogOut, Settings } from 'lucide-react';
-import { adminPath } from '../../config/admin';
 import type { ReactNode } from 'react';
+import { adminPath } from '../../config/admin';
 import { useAuthStore } from '../../store/authStore';
-import { Button } from '../ui/Button';
+import { Logo } from '../Logo';
 
 type AdminLayoutProps = {
   children: ReactNode;
@@ -12,7 +12,14 @@ type AdminLayoutProps = {
 
 export function AdminLayout({ children, title, navigate }: AdminLayoutProps) {
   const logout = useAuthStore((state) => state.logout);
-  const path = window.location.pathname;
+  const user = useAuthStore((state) => state.user);
+  const path = window.location.pathname.replace(/\/+$/, '');
+
+  const items = [
+    { label: 'Visão geral', icon: BarChart3, to: adminPath(), active: path === adminPath() },
+    { label: 'Pedidos', icon: ClipboardList, to: adminPath('/orders'), active: path.startsWith(adminPath('/orders')) },
+    { label: 'Configuracoes', icon: Settings, to: adminPath('/settings'), active: path === adminPath('/settings') },
+  ];
 
   function handleLogout() {
     logout();
@@ -20,65 +27,55 @@ export function AdminLayout({ children, title, navigate }: AdminLayoutProps) {
   }
 
   return (
-    <main className="min-h-screen bg-petal text-cocoa">
-      <header className="sticky top-0 z-30 border-b border-line/80 bg-surface/94 px-4 py-3 shadow-[0_10px_30px_rgba(138,75,62,0.03)] backdrop-blur">
-        <div className="mx-auto flex max-w-[1160px] flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center justify-between gap-3">
-            <button className="text-left font-display text-xl font-bold leading-none text-brand" onClick={() => navigate(adminPath())} type="button">
-              Anna Meyre Admin
-              <span className="mt-1 block font-body text-[11px] font-bold uppercase tracking-[0.22em] text-muted">Painel operacional</span>
+    <div className="min-h-screen bg-cream text-choco lg:grid lg:grid-cols-[248px_1fr]">
+      <aside className="sprinkles bg-choco text-cream lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
+        <div className="flex items-center justify-between gap-3 px-5 py-4 lg:block lg:px-6 lg:py-8">
+          <button type="button" onClick={() => navigate(adminPath())} className="flex items-center gap-3 text-left">
+            <Logo compact />
+            <span>
+              <span className="block font-display text-xl leading-none">Anna Meyre</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-butter">Painel</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="inline-flex items-center gap-1.5 rounded-full border-2 border-cream/20 px-3 py-1.5 text-xs font-bold text-cream/80 lg:hidden"
+          >
+            <LogOut className="h-3.5 w-3.5" aria-hidden />
+            Sair
+          </button>
+        </div>
+
+        <nav className="flex gap-1.5 overflow-x-auto px-4 pb-4 lg:flex-1 lg:flex-col lg:overflow-visible lg:px-4">
+          {items.map(({ label, icon: Icon, to, active }) => (
+            <button
+              key={to}
+              type="button"
+              onClick={() => navigate(to)}
+              className={`inline-flex min-h-11 shrink-0 items-center gap-3 rounded-2xl px-4 text-sm font-bold transition ${
+                active ? 'bg-cream text-choco' : 'text-cream/75 hover:bg-cream/10 hover:text-cream'
+              }`}
+            >
+              <Icon className="h-4 w-4" aria-hidden />
+              {label}
             </button>
-            <Button variant="secondary" onClick={handleLogout} className="min-h-10 px-4 text-sm md:hidden">
-              <LogOut className="h-4 w-4" aria-hidden />
-              Sair
-            </Button>
-          </div>
-          <nav className="flex items-center gap-1.5 overflow-x-auto rounded-full border border-line/90 bg-white/75 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-            <NavButton active={path === adminPath()} onClick={() => navigate(adminPath())} icon={BarChart3}>
-              Dashboard
-            </NavButton>
-            <NavButton active={path.startsWith(adminPath('/orders'))} onClick={() => navigate(adminPath('/orders'))} icon={ClipboardList}>
-              Pedidos
-            </NavButton>
-            <NavButton active={path === adminPath('/settings')} onClick={() => navigate(adminPath('/settings'))} icon={Settings}>
-              Configuracoes
-            </NavButton>
-          </nav>
-          <Button variant="secondary" onClick={handleLogout} className="hidden min-h-10 px-4 text-sm md:inline-flex">
+          ))}
+        </nav>
+
+        <div className="hidden border-t border-cream/10 px-6 py-5 lg:block">
+          {user ? <p className="truncate text-xs text-cream/60">{user.email}</p> : null}
+          <button type="button" onClick={handleLogout} className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-cream/80 hover:text-cream">
             <LogOut className="h-4 w-4" aria-hidden />
             Sair
-          </Button>
+          </button>
         </div>
-      </header>
-      <div className="mx-auto max-w-[1160px] px-4 py-7 md:px-6 md:py-9">
+      </aside>
+
+      <main className="mx-auto w-full max-w-6xl px-4 py-7 md:px-8 md:py-10">
         {title ? <h1 className="sr-only">{title}</h1> : null}
         {children}
-      </div>
-    </main>
-  );
-}
-
-function NavButton({
-  active,
-  children,
-  icon: Icon,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  icon: typeof BarChart3;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-bold transition ${
-        active ? 'bg-brand text-white shadow-[0_10px_22px_rgba(230,30,77,0.16)]' : 'text-cocoa hover:bg-blush/75 hover:text-brand'
-      }`}
-      onClick={onClick}
-      type="button"
-    >
-      <Icon className="h-4 w-4" aria-hidden />
-      {children}
-    </button>
+      </main>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
-import type { CreateOrderPayload } from '../types';
+import type { CreateOrderPayload, PixCharge } from '../types';
 import { api } from './api';
 
-type CreateOrderResponse = {
+export type CreateOrderResponse = {
   order: {
     publicId: string;
     orderCode: string;
@@ -11,6 +11,7 @@ type CreateOrderResponse = {
     remainingPrice: string | number;
     desiredDate: string;
   };
+  pix: PixCharge | null;
   whatsapp: {
     number: string;
     message: string;

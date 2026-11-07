@@ -1,4 +1,4 @@
-import type { Settings } from '../types';
+import type { AdminSettings, Settings } from '../types';
 import { api } from './api';
 
 export async function getPublicSettings() {
@@ -7,11 +7,11 @@ export async function getPublicSettings() {
 }
 
 export async function getAdminSettings() {
-  const { data } = await api.get<Settings>('/admin/settings');
+  const { data } = await api.get<AdminSettings>('/admin/settings');
   return data;
 }
 
-export async function updateAdminSettings(settings: Partial<Settings>) {
-  const { data } = await api.patch<Settings>('/admin/settings', settings);
+export async function updateAdminSettings(settings: Partial<AdminSettings>) {
+  const { data } = await api.patch<AdminSettings>('/admin/settings', settings);
   return data;
 }

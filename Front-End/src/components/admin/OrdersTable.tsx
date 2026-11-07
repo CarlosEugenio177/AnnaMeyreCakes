@@ -43,9 +43,9 @@ export function OrdersTable({
 
   return (
     <>
-      <div className="hidden overflow-hidden rounded-[20px] border border-line bg-surface shadow-[0_12px_30px_rgba(138,75,62,0.035)] md:block">
+      <div className="hidden overflow-hidden rounded-[24px] bg-surface shadow-soft md:block">
         <table className="w-full border-collapse text-left">
-          <thead className="bg-blush/35 text-[11px] uppercase tracking-[0.16em] text-muted">
+          <thead className="bg-cream text-[11px] uppercase tracking-[0.16em] text-muted">
             <tr>
               {selectable ? (
                 <th className="w-12 px-4 py-3">
@@ -136,7 +136,7 @@ export function OrdersTable({
         {orders.map((order) => (
           <article
             key={order.id}
-            className={`w-full rounded-[20px] border border-line bg-surface p-4 text-left shadow-[0_10px_24px_rgba(138,75,62,0.04)] ${selectedIds?.has(order.id) ? 'border-brand/45 bg-blush/35' : ''}`}
+            className={`w-full rounded-[24px] border-2 bg-surface p-4 text-left shadow-soft ${selectedIds?.has(order.id) ? 'border-brand/40 bg-blush/40' : 'border-transparent'}`}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">

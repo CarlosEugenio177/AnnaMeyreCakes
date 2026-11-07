@@ -1,17 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Customer, Prisma } from '@prisma/client';
+import { Customer, OrderStatus, Prisma, Settings } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { createHash, randomBytes } from 'crypto';
 import { Request, Response } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SettingsService } from '../settings/settings.service';
 import { CustomerContactDto } from './dto/customer-contact.dto';
 
 const CUSTOMER_SESSION_COOKIE = 'amc_customer_session';
 const SESSION_DAYS = 180;
+const AWAITING_DEPOSIT: string[] = [OrderStatus.NEW, OrderStatus.WAITING_DEPOSIT];
 
 @Injectable()
 export class CustomersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly settingsService: SettingsService,
+  ) {}
 
   normalizePhone(phone: string): string {
     return phone.replace(/\D/g, '');
@@ -128,13 +133,16 @@ export class CustomersService {
   }
 
   async getOrders(customerId: string) {
-    const orders = await this.prisma.order.findMany({
-      where: { customerId },
-      orderBy: { createdAt: 'desc' },
-      include: this.orderInclude(),
-    });
+    const [orders, settings] = await Promise.all([
+      this.prisma.order.findMany({
+        where: { customerId },
+        orderBy: { createdAt: 'desc' },
+        include: this.orderInclude(),
+      }),
+      this.settingsService.getSettings(),
+    ]);
 
-    return orders.map((order) => this.toCustomerOrder(order));
+    return orders.map((order) => this.toCustomerOrder(order, settings));
   }
 
   async getOrder(customerId: string, id: string) {
@@ -147,7 +155,7 @@ export class CustomersService {
       throw new NotFoundException('Pedido nao encontrado');
     }
 
-    return this.toCustomerOrder(order);
+    return this.toCustomerOrder(order, await this.settingsService.getSettings());
   }
 
   async getReorderPayload(customerId: string, id: string) {
@@ -206,16 +214,29 @@ export class CustomersService {
     };
   }
 
-  private toCustomerOrder(order: {
-    orderCode: string;
-    status: string;
-    totalPrice: Decimal;
-    depositPrice: Decimal;
-    remainingPrice: Decimal;
-    desiredDate: Date;
-    notes: string | null;
-  }) {
+  private toCustomerOrder(
+    order: {
+      orderCode: string;
+      status: string;
+      totalPrice: Decimal;
+      depositPrice: Decimal;
+      remainingPrice: Decimal;
+      desiredDate: Date;
+      notes: string | null;
+    },
+    settings: Settings,
+  ) {
+    // Enquanto a entrada nao foi paga, o cliente consegue pagar de novo pelo Pix.
+    const pix = AWAITING_DEPOSIT.includes(order.status)
+      ? this.settingsService.buildPixCharge(
+          settings,
+          order.depositPrice.toNumber(),
+          order.orderCode,
+        )
+      : null;
+
     return {
+      pixCode: pix?.code ?? null,
       publicId: order.orderCode,
       orderCode: order.orderCode,
       status: order.status,

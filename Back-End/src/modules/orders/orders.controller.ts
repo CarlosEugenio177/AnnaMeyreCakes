@@ -27,6 +27,7 @@ export class OrdersController {
     this.customersService.setSessionCookie(response, token);
     return {
       order: result.publicOrder,
+      pix: result.pix,
       whatsapp: result.whatsapp,
     };
   }

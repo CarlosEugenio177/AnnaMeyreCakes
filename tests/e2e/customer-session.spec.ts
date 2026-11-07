@@ -21,7 +21,7 @@ test.describe('customer session flow', () => {
     await page.reload();
     await expect(page.getByTestId('customer-greeting')).toContainText('Carlos E2E');
     await expect(page.getByTestId('contact-name-input')).toHaveValue('Carlos E2E');
-    await expect(page.getByTestId('contact-phone-input')).toHaveValue('86944440001');
+    await expect(page.getByTestId('contact-phone-input')).toHaveValue('(86) 94444-0001');
     await expect(page.getByTestId('customer-orders-link')).toBeVisible();
   });
 

@@ -233,7 +233,7 @@ test.describe('api security coverage', () => {
       });
       expect(response.ok(), endpoint).toBeTruthy();
       const body = await response.json();
-      expect(Object.keys(body).sort()).toEqual(['storeStatus', 'whatsappNumber']);
+      expect(Object.keys(body).sort()).toEqual(['pixKey', 'pixMerchantCity', 'pixMerchantName', 'storeStatus', 'whatsappNumber']);
       assertNoForbiddenFields(body);
     }
   });

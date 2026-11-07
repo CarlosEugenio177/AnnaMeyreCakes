@@ -68,6 +68,19 @@ export type Settings = {
   storeStatus: StoreStatus;
 };
 
+export type AdminSettings = Settings & {
+  pixKey: string;
+  pixMerchantName: string;
+  pixMerchantCity: string;
+};
+
+export type PixCharge = {
+  code: string;
+  amount: number;
+  key: string;
+  merchantName: string;
+};
+
 export type SweetSelection = {
   sweetTypeId: string;
   quantity: 30 | 50 | 100;
@@ -156,6 +169,7 @@ export type CustomerOrder = {
   remainingPrice: string | number;
   desiredDate: string;
   notes?: string | null;
+  pixCode?: string | null;
 };
 
 export type ReorderPayload = {

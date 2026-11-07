@@ -50,11 +50,11 @@ export function Dashboard({ navigate }: DashboardProps) {
   const recentOrders = orders.slice(0, 6);
 
   return (
-    <AdminLayout title="Dashboard" navigate={navigate}>
+    <AdminLayout title="Visão geral" navigate={navigate}>
       <div data-testid="admin-dashboard" className="sr-only">Dashboard</div>
       <AdminPageHeader
-        title="Dashboard"
-        subtitle="Acompanhe os pedidos e o desempenho da loja."
+        title="Visão geral"
+        subtitle="Como estão os pedidos e a agenda da confeitaria."
         actions={<Button variant="secondary" onClick={loadDashboard}>Atualizar</Button>}
       />
 

@@ -310,6 +310,10 @@ model Settings {
   key            String      @unique @default("global")
   whatsappNumber String      @map("whatsapp_number")
   storeStatus    StoreStatus @default(OPEN) @map("store_status")
+  // Dados do Pix usados para cobrar a entrada de 50% (opcionais ate serem configurados).
+  pixKey          String?     @map("pix_key")
+  pixMerchantName String?     @map("pix_merchant_name")
+  pixMerchantCity String?     @map("pix_merchant_city")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

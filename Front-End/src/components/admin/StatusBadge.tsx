@@ -6,7 +6,21 @@ type StatusBadgeProps = {
   status: OrderStatus;
 };
 
+const tones: Record<OrderStatus, 'rose' | 'cream' | 'green' | 'gray' | 'butter'> = {
+  NEW: 'rose',
+  WAITING_DEPOSIT: 'butter',
+  DEPOSIT_PAID: 'green',
+  CONFIRMED: 'green',
+  IN_PRODUCTION: 'cream',
+  READY: 'green',
+  DELIVERED: 'gray',
+  CANCELED: 'gray',
+};
+
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const tone = status === 'CANCELED' ? 'gray' : status === 'DELIVERED' || status === 'READY' ? 'green' : 'rose';
-  return <Badge tone={tone} className="min-w-[92px] justify-center">{statusLabels[status]}</Badge>;
+  return (
+    <Badge tone={tones[status]} className="min-w-[96px] justify-center">
+      {statusLabels[status]}
+    </Badge>
+  );
 }

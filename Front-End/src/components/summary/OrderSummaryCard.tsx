@@ -20,9 +20,7 @@ export function OrderSummaryCard(props: OrderSummaryProps) {
 
   return (
     <div data-testid="order-summary">
-      <h2 className="font-display text-xl font-semibold text-cocoa">Seu pedido</h2>
-
-      <dl className="mt-4 space-y-2.5 text-sm">
+      <dl className="space-y-2 text-sm">
         <Row label="Massa" value={findName(catalog?.doughs, doughId)} />
         <Row label="Tamanho" value={size ? `${size.slices} fatias` : undefined} />
         <Row label="Recheios" value={fillings || undefined} />
@@ -32,14 +30,14 @@ export function OrderSummaryCard(props: OrderSummaryProps) {
         ))}
       </dl>
 
-      <div className="mt-5 space-y-1.5 border-t border-dashed border-line pt-4 text-sm">
+      <div className="mt-4 space-y-1 rounded-2xl bg-cream p-4 text-sm">
         <div data-testid="order-total" className="flex items-baseline justify-between">
-          <span className="font-semibold text-cocoa">Total</span>
-          <span className="font-display text-2xl font-semibold text-cocoa">{currency.format(preview.total)}</span>
+          <span className="font-bold text-choco">Total</span>
+          <span className="font-display text-3xl text-choco">{currency.format(preview.total)}</span>
         </div>
         <div className="flex justify-between text-muted">
-          <span>Entrada de 50% para reservar</span>
-          <span>{currency.format(preview.deposit)}</span>
+          <span>Entrada (50%) para reservar</span>
+          <span className="font-semibold text-brand">{currency.format(preview.deposit)}</span>
         </div>
         <div className="flex justify-between text-muted">
           <span>Restante na entrega</span>
@@ -54,7 +52,7 @@ function Row({ label, value }: { label: string; value?: string }) {
   return (
     <div className="flex justify-between gap-4">
       <dt className="text-muted">{label}</dt>
-      <dd className="text-right font-medium text-cocoa">{value ?? '—'}</dd>
+      <dd className={`text-right font-semibold ${value ? 'text-choco' : 'text-muted/60'}`}>{value ?? 'escolher'}</dd>
     </div>
   );
 }

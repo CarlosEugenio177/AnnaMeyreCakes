@@ -24,41 +24,32 @@ Toda a API fica sob o prefixo `/api`. Em produção, frontend e API são servido
 
 ## Rodando localmente
 
-Requisitos: Node.js 20+ e PostgreSQL (local ou via Docker).
+Requisito: **apenas Node.js 20+**. Não precisa de Docker nem de PostgreSQL instalado: o projeto usa um PostgreSQL embutido (pacote npm `embedded-postgres`), que roda direto pelo Node e guarda os dados em `.pgdata/`.
+
+Primeira vez:
 
 ```bash
 npm install
 npm --prefix Back-End install
 npm --prefix Front-End install
-
-cp Back-End/.env.example Back-End/.env   # no Windows: copy Back-End\.env.example Back-End\.env
+npm run setup
 ```
 
-Edite `Back-End/.env` (no mínimo `SEED_ADMIN_PASSWORD`). Para subir o banco com Docker:
+O `setup` cria o `Back-End/.env`, sobe o banco local, aplica as migrations e roda o seed (admin, configurações e cardápio). No final ele mostra o login do painel.
 
-```bash
-npm run dev:db
-```
-
-Migrations e seed (cria o admin, as configurações e o catálogo inicial):
-
-```bash
-cd Back-End
-npm run prisma:migrate
-npm run prisma:seed
-cd ..
-```
-
-Subir API e frontend juntos:
+Depois, sempre que for trabalhar:
 
 ```bash
 npm run dev
 ```
 
-- Frontend: http://localhost:5173 (também acessível pelo celular na mesma rede, via `http://SEU_IP:5173`)
+Isso sobe banco, API e frontend juntos (Ctrl+C desliga tudo):
+
+- Loja: http://localhost:5173 (no celular, na mesma rede Wi-Fi: `http://SEU_IP:5173`)
+- Painel: http://localhost:5173/gestao (login: `admin@annameyrecakes.local` / `admin123456`, definidos no `Back-End/.env`)
 - API: http://localhost:3000/api
 
-Painel da confeitaria: http://localhost:5173/gestao (login com `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` do `.env`). Veja "Painel escondido" abaixo.
+Para zerar o banco local, desligue o `npm run dev`, apague a pasta `.pgdata/` e rode `npm run setup` de novo. Se o `DATABASE_URL` do `.env` apontar para outro servidor (ex.: um banco na nuvem), o banco embutido não é iniciado.
 
 ## Testes
 
@@ -70,7 +61,7 @@ npm run test:security
 npm run test:all          # tudo
 ```
 
-Os testes Playwright precisam do banco migrado e com seed. Eles sobem API e frontend sozinhos se não estiverem rodando. Defina `SEED_ADMIN_PASSWORD` (ou `E2E_ADMIN_PASSWORD`) no ambiente com a senha usada no seed.
+Os testes Playwright precisam do banco migrado e com seed (`npm run setup`). Eles sobem banco, API e frontend sozinhos se não estiverem rodando. Defina `SEED_ADMIN_PASSWORD` (ou `E2E_ADMIN_PASSWORD`) no ambiente com a senha usada no seed.
 
 ## Deploy na Vercel
 
@@ -123,6 +114,16 @@ Admin (Bearer token):
 - `POST /api/admin/orders/:id/payments`
 - `GET /api/admin/settings`, `PATCH /api/admin/settings`
 - `GET /api/admin/options` e CRUD em `/api/admin/options/{doughs,fillings,toppings,cake-sizes,sweet-types,sweet-flavors}`
+
+## Pix da entrada (50%)
+
+Cada pedido gera um **Pix copia-e-cola + QR Code** com o valor exato da entrada, direto na chave Pix da loja (BR Code estático no padrão do Banco Central). Não há gateway nem taxa.
+
+1. No painel, em **Configurações → Pix da entrada**, informe a chave Pix, o nome do recebedor e a cidade.
+2. Ao finalizar o pedido, o cliente vê o QR Code e o código para copiar. Ele também encontra o Pix depois, em "Meus pedidos", enquanto a entrada não for confirmada.
+3. Quando o dinheiro cair, abra o pedido no painel e clique em **Confirmar entrada**. O status passa para "Entrada paga".
+
+Como o Pix estático não avisa o site sozinho, a confirmação é manual (um clique). Sem Pix configurado, o pagamento é combinado pelo WhatsApp, como antes.
 
 ## Painel escondido
 
