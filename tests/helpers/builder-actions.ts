@@ -11,7 +11,7 @@ export async function chooseRequiredCakeOptions(page: Page) {
 
 export async function submitOrderAndWait(page: Page) {
   const orderResponse = page.waitForResponse((response) =>
-    response.url().endsWith('/orders') && response.request().method() === 'POST',
+    response.url().endsWith('/api/orders') && response.request().method() === 'POST',
   );
   await page.getByTestId('finish-order-button').click();
   await expect((await orderResponse).ok()).toBeTruthy();

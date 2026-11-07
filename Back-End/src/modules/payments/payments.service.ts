@@ -4,6 +4,13 @@ import { toDecimal } from '../../common/utils/money';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
+// So pedidos que ainda aguardam a entrada avancam automaticamente; pedidos ja
+// confirmados, em producao, entregues ou cancelados mantem o status atual.
+const STATUSES_AWAITING_DEPOSIT: OrderStatus[] = [
+  OrderStatus.NEW,
+  OrderStatus.WAITING_DEPOSIT,
+];
+
 @Injectable()
 export class PaymentsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -12,7 +19,7 @@ export class PaymentsService {
     return this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
-        select: { depositPrice: true },
+        select: { depositPrice: true, status: true },
       });
 
       if (!order) {
@@ -34,7 +41,10 @@ export class PaymentsService {
         },
       });
 
-      if (payment.status === PaymentStatus.PAID) {
+      if (
+        payment.status === PaymentStatus.PAID &&
+        STATUSES_AWAITING_DEPOSIT.includes(order.status)
+      ) {
         const paidPayments = await tx.paymentRecord.aggregate({
           where: { orderId, status: PaymentStatus.PAID },
           _sum: { amount: true },

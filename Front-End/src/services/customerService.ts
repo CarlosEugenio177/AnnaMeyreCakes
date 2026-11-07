@@ -1,4 +1,4 @@
-import type { CustomerOrder, CustomerProfile } from '../types';
+import type { CustomerOrder, CustomerProfile, ReorderPayload } from '../types';
 import { api } from './api';
 
 export async function getCurrentCustomer() {
@@ -15,7 +15,7 @@ export async function getCustomerOrders() {
   return data;
 }
 
-export async function getCustomerOrder(id: string) {
-  const { data } = await api.get<CustomerOrder>(`/customer/orders/${id}`);
+export async function getReorderPayload(orderCode: string) {
+  const { data } = await api.get<ReorderPayload>(`/customer/orders/${orderCode}/reorder`);
   return data;
 }

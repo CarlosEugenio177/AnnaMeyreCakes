@@ -6,7 +6,7 @@ test.describe('admin catalog CRUD flow', () => {
     const token = await loginAdmin(request);
     const name = `Massa Admin CRUD ${Date.now()}`;
 
-    const create = await request.post('/admin/options/doughs', {
+    const create = await request.post('/api/admin/options/doughs', {
       headers: authHeaders(token),
       data: { name, colorHex: '#fadadd' },
     });
@@ -14,7 +14,7 @@ test.describe('admin catalog CRUD flow', () => {
     const created = await create.json();
 
     const updatedName = `${name} Editada`;
-    const update = await request.patch(`/admin/options/doughs/${created.id}`, {
+    const update = await request.patch(`/api/admin/options/doughs/${created.id}`, {
       headers: authHeaders(token),
       data: { name: updatedName, colorHex: '#fadadd' },
     });
@@ -23,7 +23,7 @@ test.describe('admin catalog CRUD flow', () => {
     const publicCatalog = await getPublicCatalog(request);
     expect(publicCatalog.doughs.some((item) => item.name === updatedName)).toBe(true);
 
-    const deactivate = await request.delete(`/admin/options/doughs/${created.id}`, {
+    const deactivate = await request.delete(`/api/admin/options/doughs/${created.id}`, {
       headers: authHeaders(token),
     });
     expect(deactivate.ok()).toBeTruthy();

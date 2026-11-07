@@ -38,13 +38,6 @@ export class OrdersController {
     return this.ordersService.getAdminOrders();
   }
 
-  @Get('api/admin/orders')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.OWNER, UserRole.ADMIN)
-  getApiAdminOrders() {
-    return this.ordersService.getAdminOrders();
-  }
-
   @Get('admin/orders/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER, UserRole.ADMIN)
@@ -59,7 +52,7 @@ export class OrdersController {
     return this.ordersService.updateStatus(id, dto);
   }
 
-  @Patch(['admin/orders/status', 'api/admin/orders/status'])
+  @Patch('admin/orders/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   bulkUpdateStatus(@Body() dto: BulkUpdateOrderStatusDto) {

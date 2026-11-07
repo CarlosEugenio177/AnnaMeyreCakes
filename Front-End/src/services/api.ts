@@ -1,30 +1,15 @@
 import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
 
-function resolveApiUrl() {
-  const configuredUrl = import.meta.env.VITE_API_URL as string | undefined;
-
-  if (typeof window === 'undefined') {
-    return configuredUrl ?? 'http://localhost:3000';
-  }
-
-  const { protocol, hostname } = window.location;
-  const isLocalFrontend = hostname === 'localhost' || hostname === '127.0.0.1';
-  const configuredIsLocalhost = configuredUrl?.includes('localhost') || configuredUrl?.includes('127.0.0.1');
-
-  if (configuredUrl && (!configuredIsLocalhost || isLocalFrontend)) {
-    return configuredUrl;
-  }
-
-  return `${protocol}//${hostname}:3000`;
-}
-
+// Por padrao a API e servida na mesma origem, em /api (Vercel em producao e
+// proxy do Vite em desenvolvimento). VITE_API_URL permite apontar para outra API.
 export const api = axios.create({
-  baseURL: resolveApiUrl(),
+  baseURL: import.meta.env.VITE_API_URL ?? '/api',
   withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('amc_admin_token');
+  const token = useAuthStore.getState().token;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -32,6 +17,18 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Token do admin expirado ou invalido: encerra a sessao para o app voltar ao login.
+    if (axios.isAxiosError(error) && error.response?.status === 401 && error.config?.headers?.Authorization) {
+      useAuthStore.getState().logout();
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export function getApiErrorMessage(error: unknown) {
   if (axios.isAxiosError(error)) {

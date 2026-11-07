@@ -1,4 +1,5 @@
 import { BarChart3, ClipboardList, LogOut, Settings } from 'lucide-react';
+import { adminPath } from '../../config/admin';
 import type { ReactNode } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/Button';
@@ -15,7 +16,7 @@ export function AdminLayout({ children, title, navigate }: AdminLayoutProps) {
 
   function handleLogout() {
     logout();
-    navigate('/admin/login');
+    navigate(adminPath('/login'));
   }
 
   return (
@@ -23,7 +24,7 @@ export function AdminLayout({ children, title, navigate }: AdminLayoutProps) {
       <header className="sticky top-0 z-30 border-b border-line/80 bg-surface/94 px-4 py-3 shadow-[0_10px_30px_rgba(138,75,62,0.03)] backdrop-blur">
         <div className="mx-auto flex max-w-[1160px] flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center justify-between gap-3">
-            <button className="text-left font-display text-xl font-bold leading-none text-brand" onClick={() => navigate('/admin')} type="button">
+            <button className="text-left font-display text-xl font-bold leading-none text-brand" onClick={() => navigate(adminPath())} type="button">
               Anna Meyre Admin
               <span className="mt-1 block font-body text-[11px] font-bold uppercase tracking-[0.22em] text-muted">Painel operacional</span>
             </button>
@@ -33,13 +34,13 @@ export function AdminLayout({ children, title, navigate }: AdminLayoutProps) {
             </Button>
           </div>
           <nav className="flex items-center gap-1.5 overflow-x-auto rounded-full border border-line/90 bg-white/75 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-            <NavButton active={path === '/admin' || path === '/admin/' || path === '/admin/dashboard'} onClick={() => navigate('/admin')} icon={BarChart3}>
+            <NavButton active={path === adminPath()} onClick={() => navigate(adminPath())} icon={BarChart3}>
               Dashboard
             </NavButton>
-            <NavButton active={path.startsWith('/admin/orders')} onClick={() => navigate('/admin/orders')} icon={ClipboardList}>
+            <NavButton active={path.startsWith(adminPath('/orders'))} onClick={() => navigate(adminPath('/orders'))} icon={ClipboardList}>
               Pedidos
             </NavButton>
-            <NavButton active={path === '/admin/settings'} onClick={() => navigate('/admin/settings')} icon={Settings}>
+            <NavButton active={path === adminPath('/settings')} onClick={() => navigate(adminPath('/settings'))} icon={Settings}>
               Configuracoes
             </NavButton>
           </nav>

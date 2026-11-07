@@ -14,13 +14,13 @@ export type PublicCatalog = {
 };
 
 export async function getPublicCatalog(request: APIRequestContext): Promise<PublicCatalog> {
-  const response = await request.get('/api/public/catalog');
+  const response = await request.get('/api/catalog');
   expect(response.ok()).toBeTruthy();
   return response.json();
 }
 
 export async function loginAdmin(request: APIRequestContext) {
-  const response = await request.post('/admin/login', {
+  const response = await request.post('/api/auth/login', {
     data: {
       email: process.env.E2E_ADMIN_EMAIL ?? process.env.SEED_ADMIN_EMAIL ?? 'admin@annameyrecakes.local',
       password: process.env.E2E_ADMIN_PASSWORD ?? process.env.SEED_ADMIN_PASSWORD ?? 'admin123',
@@ -34,7 +34,7 @@ export async function loginAdmin(request: APIRequestContext) {
 
 export async function getAdminOrderByCode(request: APIRequestContext, orderCode: string) {
   const token = await loginAdmin(request);
-  const response = await request.get('/admin/orders', {
+  const response = await request.get('/api/admin/orders', {
     headers: authHeaders(token),
   });
 
@@ -53,7 +53,7 @@ export function authHeaders(token: string) {
 
 export async function ensureStoreOpen(request: APIRequestContext) {
   const token = await loginAdmin(request);
-  const response = await request.patch('/admin/settings', {
+  const response = await request.patch('/api/admin/settings', {
     headers: authHeaders(token),
     data: { storeStatus: 'OPEN' },
   });

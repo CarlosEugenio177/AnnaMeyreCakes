@@ -16,7 +16,7 @@ test.describe('order and session regression', () => {
       customerEmail: `antigo-${suffix}@example.com`,
       customerAddress: 'Endereco antigo',
     });
-    const firstResponse = await request.post('/orders', { data: firstPayload });
+    const firstResponse = await request.post('/api/orders', { data: firstPayload });
     expect(firstResponse.ok()).toBeTruthy();
     const firstPublicOrder = (await firstResponse.json()).order;
 
@@ -26,7 +26,7 @@ test.describe('order and session regression', () => {
       customerEmail: `novo-${suffix}@example.com`,
       customerAddress: 'Endereco novo',
     });
-    const secondResponse = await request.post('/orders', { data: secondPayload });
+    const secondResponse = await request.post('/api/orders', { data: secondPayload });
     expect(secondResponse.ok()).toBeTruthy();
     const secondPublicOrder = (await secondResponse.json()).order;
     const firstOrder = await getAdminOrderByCode(request, firstPublicOrder.orderCode);
@@ -43,7 +43,7 @@ test.describe('order and session regression', () => {
       }),
     );
 
-    const adminOrderResponse = await request.get(`/admin/orders/${firstOrder.id}`, {
+    const adminOrderResponse = await request.get(`/api/admin/orders/${firstOrder.id}`, {
       headers: authHeaders(token),
     });
     expect(adminOrderResponse.ok()).toBeTruthy();
@@ -58,7 +58,7 @@ test.describe('order and session regression', () => {
     });
     const catalog = await getPublicCatalog(context);
 
-    const response = await context.post('/orders', {
+    const response = await context.post('/api/orders', {
       data: makeOrderPayload(catalog, {
         customerName: 'Cliente Sessao',
         customerPhone: '(86) 95555-1212',
@@ -78,7 +78,7 @@ test.describe('order and session regression', () => {
     const meResponse = await context.get('/api/customer/me');
     expect(meResponse.ok()).toBeTruthy();
 
-    const logoutResponse = await context.delete('/customer/session');
+    const logoutResponse = await context.delete('/api/customer/session');
     expect(logoutResponse.ok()).toBeTruthy();
 
     const afterLogout = await context.get('/api/customer/me');

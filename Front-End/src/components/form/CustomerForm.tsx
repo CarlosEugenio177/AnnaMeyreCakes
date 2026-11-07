@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { UseFormRegister } from 'react-hook-form';
 import type { CustomerData } from '../../types';
 import { Card } from '../ui/Card';
@@ -12,28 +13,48 @@ type CustomerFormProps = {
 export function CustomerForm({ register, minDate, errors }: CustomerFormProps) {
   return (
     <Card>
-      <StepHeader eyebrow="Finalizacao" title="Seus dados" hint="Nome, WhatsApp e data sao obrigatorios." />
-      <div className="grid gap-4 md:grid-cols-2 lg:gap-2.5">
+      <StepHeader step={7} title="Seus dados" hint="Usamos para confirmar o pedido com você pelo WhatsApp." />
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nome" error={errors.customerName}>
-          <input {...register('customerName')} className={inputClassName} data-testid="contact-name-input" placeholder="Seu nome" />
+          <input {...register('customerName')} className={inputClassName} data-testid="contact-name-input" autoComplete="name" placeholder="Seu nome" />
         </Field>
         <Field label="WhatsApp" error={errors.customerPhone}>
-          <input {...register('customerPhone')} className={inputClassName} data-testid="contact-phone-input" inputMode="tel" placeholder="(00) 00000-0000" />
+          <input
+            {...register('customerPhone')}
+            className={inputClassName}
+            data-testid="contact-phone-input"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="(00) 00000-0000"
+          />
         </Field>
-        <Field label="Email" error={errors.customerEmail}>
-          <input {...register('customerEmail')} className={inputClassName} data-testid="contact-email-input" inputMode="email" placeholder="voce@email.com" />
-        </Field>
-        <Field label="Endereco" error={errors.customerAddress}>
-          <input {...register('customerAddress')} className={inputClassName} data-testid="contact-address-input" placeholder="Rua, numero, bairro" />
+        <Field label="E-mail" optional error={errors.customerEmail}>
+          <input
+            {...register('customerEmail')}
+            className={inputClassName}
+            data-testid="contact-email-input"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="voce@email.com"
+          />
         </Field>
         <Field label="Data de entrega" error={errors.desiredDate}>
           <input {...register('desiredDate')} className={inputClassName} min={minDate} type="date" />
         </Field>
-        <Field label="Observações" error={errors.notes}>
+        <Field label="Endereço" optional error={errors.customerAddress} className="sm:col-span-2">
+          <input
+            {...register('customerAddress')}
+            className={inputClassName}
+            data-testid="contact-address-input"
+            autoComplete="street-address"
+            placeholder="Rua, número e bairro (se for entrega)"
+          />
+        </Field>
+        <Field label="Observações" optional error={errors.notes} className="sm:col-span-2">
           <textarea
             {...register('notes')}
-            className={`${inputClassName} min-h-28 resize-none py-4`}
-            placeholder="Tema, cores, retirada ou entrega..."
+            className={`${inputClassName} min-h-24 resize-y py-3`}
+            placeholder="Tema, cores, frase no topo, retirada ou entrega..."
           />
         </Field>
       </div>
@@ -42,14 +63,25 @@ export function CustomerForm({ register, minDate, errors }: CustomerFormProps) {
 }
 
 const inputClassName =
-  'w-full rounded-[22px] border border-line bg-white px-5 text-lg text-cocoa outline-none transition placeholder:text-muted/60 focus:border-cocoa min-h-16 lg:min-h-11 lg:rounded-[14px] lg:px-3.5 lg:text-sm';
+  'min-h-12 w-full rounded-xl border border-line bg-surface px-4 text-sm text-cocoa outline-none transition placeholder:text-muted/60 focus:border-cocoa/40 focus:ring-2 focus:ring-blush';
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+type FieldProps = {
+  label: string;
+  error?: string;
+  optional?: boolean;
+  className?: string;
+  children: ReactNode;
+};
+
+function Field({ label, error, optional, className = '', children }: FieldProps) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-bold uppercase tracking-[0.18em] text-muted lg:mb-1.5 lg:text-[9px] lg:tracking-[0.14em]">{label}</span>
+    <label className={`block ${className}`}>
+      <span className="mb-1.5 block text-sm font-medium text-cocoa">
+        {label}
+        {optional ? <span className="ml-1 font-normal text-muted">(opcional)</span> : null}
+      </span>
       {children}
-      {error ? <span className="mt-1 block text-xs font-semibold text-brand">{error}</span> : null}
+      {error ? <span className="mt-1 block text-xs font-medium text-brand">{error}</span> : null}
     </label>
   );
 }

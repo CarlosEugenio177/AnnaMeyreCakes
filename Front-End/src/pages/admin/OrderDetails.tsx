@@ -1,4 +1,5 @@
-import { ArrowLeft, CalendarDays, CreditCard, MessageCircle, Package, UserRound } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CreditCard, Mail, MapPin, MessageCircle, NotebookPen, Package, UserRound } from 'lucide-react';
+import { adminPath } from '../../config/admin';
 import { useEffect, useState, type FormEvent } from 'react';
 import { AdminCard } from '../../components/admin/AdminCard';
 import { AdminLayout } from '../../components/admin/AdminLayout';
@@ -9,7 +10,8 @@ import { StatusBadge } from '../../components/admin/StatusBadge';
 import { Button } from '../../components/ui/Button';
 import { createPayment, getAdminOrder, updateOrderStatus } from '../../services/adminService';
 import { getApiErrorMessage } from '../../services/api';
-import type { AdminOrder, OrderStatus, PaymentMethod } from '../../types';
+import type { AdminOrder, OrderStatus, PaymentMethod, PaymentStatus } from '../../types';
+import { formatDeliveryDate } from '../../utils/date';
 import { currency, toNumber } from '../../utils/pricePreview';
 import { orderStatuses, statusLabels } from '../../utils/statusLabels';
 
@@ -25,6 +27,7 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('PIX');
   const [paymentError, setPaymentError] = useState<string>();
+  const [statusError, setStatusError] = useState<string>();
 
   useEffect(() => {
     loadOrder();
@@ -47,8 +50,11 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
     }
 
     setIsSaving(true);
+    setStatusError(undefined);
     try {
       setOrder(await updateOrderStatus(order.id, status));
+    } catch (error) {
+      setStatusError(getApiErrorMessage(error));
     } finally {
       setIsSaving(false);
     }
@@ -91,7 +97,7 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
         title={order?.orderCode ?? 'Detalhe do pedido'}
         subtitle="Confira dados do cliente, itens escolhidos, status e pagamentos."
         actions={
-          <Button variant="secondary" onClick={() => navigate('/admin/orders')}>
+          <Button variant="secondary" onClick={() => navigate(adminPath('/orders'))}>
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Voltar
           </Button>
@@ -115,8 +121,15 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
               <div className="mt-5 grid gap-3 md:grid-cols-3">
                 <Info icon={UserRound} label="Cliente" value={order.customer.name} />
                 <Info icon={MessageCircle} label="WhatsApp" value={order.customer.phone} />
-                <Info icon={CalendarDays} label="Entrega" value={new Date(order.desiredDate).toLocaleDateString('pt-BR')} />
+                <Info icon={CalendarDays} label="Entrega" value={formatDeliveryDate(order.desiredDate)} />
+                {order.contactSnapshot?.email ? <Info icon={Mail} label="Email" value={order.contactSnapshot.email} /> : null}
+                {order.contactSnapshot?.address ? <Info icon={MapPin} label="Endereco" value={order.contactSnapshot.address} /> : null}
               </div>
+              {order.notes ? (
+                <div className="mt-3">
+                  <Info icon={NotebookPen} label="Observacoes do cliente" value={order.notes} />
+                </div>
+              ) : null}
             </AdminCard>
 
             <AdminCard className="p-5">
@@ -169,6 +182,7 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
                   </option>
                 ))}
               </select>
+              {statusError ? <p className="mt-2 text-sm font-semibold text-brand">{statusError}</p> : null}
             </AdminCard>
 
             <AdminCard className="p-5">
@@ -193,7 +207,7 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
                     {order.payments.map((payment) => (
                       <div key={payment.id} className="rounded-[16px] bg-white px-3 py-2 text-sm">
                         <span className="font-bold text-cocoa">{currency.format(toNumber(payment.amount))}</span>
-                        <span className="ml-2 text-muted">{payment.paymentMethod} - {payment.status}</span>
+                        <span className="ml-2 text-muted">{paymentMethodLabels[payment.paymentMethod]} - {paymentStatusLabels[payment.status]}</span>
                       </div>
                     ))}
                   </div>
@@ -213,11 +227,11 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
                   value={paymentMethod}
                   onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)}
                 >
-                  <option value="PIX">PIX</option>
-                  <option value="CASH">Dinheiro</option>
-                  <option value="CARD">Cartao</option>
-                  <option value="BANK_TRANSFER">Transferencia</option>
-                  <option value="OTHER">Outro</option>
+                  {Object.entries(paymentMethodLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
                 </select>
                 {paymentError ? <p className="text-sm font-semibold text-brand">{paymentError}</p> : null}
                 <Button type="submit" className="w-full" disabled={isSaving}>
@@ -232,6 +246,20 @@ export function OrderDetails({ id, navigate }: OrderDetailsProps) {
   );
 }
 
+const paymentMethodLabels: Record<PaymentMethod, string> = {
+  PIX: 'PIX',
+  CASH: 'Dinheiro',
+  CARD: 'Cartao',
+  BANK_TRANSFER: 'Transferencia',
+  OTHER: 'Outro',
+};
+
+const paymentStatusLabels: Record<PaymentStatus, string> = {
+  PENDING: 'Pendente',
+  PAID: 'Pago',
+  CANCELED: 'Cancelado',
+};
+
 function Info({ icon: Icon, label, value }: { icon: typeof UserRound; label: string; value: string }) {
   return (
     <div className="rounded-[18px] border border-line bg-white p-4">
@@ -239,7 +267,7 @@ function Info({ icon: Icon, label, value }: { icon: typeof UserRound; label: str
         <Icon className="h-4 w-4" aria-hidden />
         <span className="text-[11px] font-bold uppercase tracking-[0.16em]">{label}</span>
       </div>
-      <p className="mt-2 font-semibold text-cocoa">{value}</p>
+      <p className="mt-2 whitespace-pre-line break-words font-semibold text-cocoa">{value}</p>
     </div>
   );
 }

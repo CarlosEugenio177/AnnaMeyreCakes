@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm --prefix Back-End ci && npm --prefix Front-End ci",
+  "buildCommand": "npm run build && if [ \"$VERCEL_ENV\" = \"production\" ]; then npm --prefix Back-End run prisma:deploy; fi",
+  "outputDirectory": "Front-End/dist",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "Back-End/node_modules/.prisma/client/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

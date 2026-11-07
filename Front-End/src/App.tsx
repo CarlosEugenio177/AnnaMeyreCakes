@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { adminPath, isAdminPath } from './config/admin';
 import { Home } from './pages/Home';
 import { useAuthStore } from './store/authStore';
 
@@ -11,95 +12,86 @@ const Orders = lazy(() => import('./pages/admin/Orders').then((module) => ({ def
 const Settings = lazy(() => import('./pages/admin/Settings').then((module) => ({ default: module.Settings })));
 
 function App() {
-  const [path, setPath] = useState(window.location.pathname);
+  const [path, setPath] = useState(normalizePath(window.location.pathname));
   const token = useAuthStore((state) => state.token);
+  const onAdmin = isAdminPath(path);
 
   useEffect(() => {
-    const handlePopState = () => setPath(window.location.pathname);
+    const handlePopState = () => setPath(normalizePath(window.location.pathname));
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Paginas do painel nunca devem ser indexadas por buscadores.
+  useEffect(() => {
+    let robots = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if (onAdmin) {
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.name = 'robots';
+        document.head.appendChild(robots);
+      }
+      robots.content = 'noindex, nofollow';
+    } else {
+      robots?.remove();
+    }
+  }, [onAdmin]);
+
   function navigate(nextPath: string) {
     window.history.pushState({}, '', nextPath);
-    setPath(nextPath);
+    setPath(normalizePath(nextPath));
     window.scrollTo({ top: 0 });
   }
 
   if (path === '/builder') {
-    return (
-      <Suspense fallback={<LoadingScreen />}>
-        <Builder navigate={navigate} />
-      </Suspense>
-    );
+    return <Lazy><Builder navigate={navigate} /></Lazy>;
   }
 
   if (path === '/meus-pedidos') {
-    return (
-      <Suspense fallback={<LoadingScreen />}>
-        <CustomerOrders navigate={navigate} />
-      </Suspense>
-    );
+    return <Lazy><CustomerOrders navigate={navigate} /></Lazy>;
   }
 
-  if (path === '/admin/login') {
-    return (
-      <Suspense fallback={<LoadingScreen />}>
-        <Login navigate={navigate} />
-      </Suspense>
-    );
+  if (onAdmin) {
+    if (!token || path === adminPath('/login')) {
+      return <Lazy><Login navigate={navigate} /></Lazy>;
+    }
+
+    if (path === adminPath()) {
+      return <Lazy><Dashboard navigate={navigate} /></Lazy>;
+    }
+
+    if (path === adminPath('/orders')) {
+      return <Lazy><Orders navigate={navigate} /></Lazy>;
+    }
+
+    if (path.startsWith(adminPath('/orders/'))) {
+      const id = path.slice(adminPath('/orders/').length);
+      return <Lazy><OrderDetails id={id} navigate={navigate} /></Lazy>;
+    }
+
+    if (path === adminPath('/settings')) {
+      return <Lazy><Settings navigate={navigate} /></Lazy>;
+    }
+
+    return <Lazy><Dashboard navigate={navigate} /></Lazy>;
   }
 
-  if (path.startsWith('/admin')) {
-    if (!token) {
-      return (
-        <Suspense fallback={<LoadingScreen />}>
-          <Login navigate={navigate} />
-        </Suspense>
-      );
-    }
-
-    if (path === '/admin' || path === '/admin/' || path === '/admin/dashboard') {
-      return (
-        <Suspense fallback={<LoadingScreen />}>
-          <Dashboard navigate={navigate} />
-        </Suspense>
-      );
-    }
-
-    if (path === '/admin/orders') {
-      return (
-        <Suspense fallback={<LoadingScreen />}>
-          <Orders navigate={navigate} />
-        </Suspense>
-      );
-    }
-
-    if (path.startsWith('/admin/orders/')) {
-      const id = path.split('/').at(-1) ?? '';
-      return (
-        <Suspense fallback={<LoadingScreen />}>
-          <OrderDetails id={id} navigate={navigate} />
-        </Suspense>
-      );
-    }
-
-    if (path === '/admin/settings') {
-      return (
-        <Suspense fallback={<LoadingScreen />}>
-          <Settings navigate={navigate} />
-        </Suspense>
-      );
-    }
-  }
-
+  // Qualquer rota desconhecida (inclusive /admin) cai na pagina inicial.
   return <Home navigate={navigate} />;
+}
+
+function normalizePath(path: string) {
+  return path.length > 1 ? path.replace(/\/+$/, '') : path;
+}
+
+function Lazy({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<LoadingScreen />}>{children}</Suspense>;
 }
 
 function LoadingScreen() {
   return (
-    <main className="grid min-h-screen place-items-center bg-petal px-6 text-center font-semibold text-cocoa">
-      Carregando...
+    <main className="grid min-h-screen place-items-center bg-cream px-6">
+      <span className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand" aria-label="Carregando" />
     </main>
   );
 }

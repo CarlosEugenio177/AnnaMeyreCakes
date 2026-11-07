@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { frontendUrl } from '../helpers/frontend';
+import { adminUrl, frontendUrl } from '../helpers/frontend';
 import { getAdminOrderByCode } from '../helpers/api-fixtures';
 import { createCustomerOrder } from '../helpers/order-fixtures';
 
 async function installAdminSession(page: import('@playwright/test').Page, request: import('@playwright/test').APIRequestContext) {
-  const response = await request.post('/admin/login', {
+  const response = await request.post('/api/auth/login', {
     data: {
       email: process.env.E2E_ADMIN_EMAIL ?? process.env.SEED_ADMIN_EMAIL ?? 'admin@annameyrecakes.local',
       password: process.env.E2E_ADMIN_PASSWORD ?? process.env.SEED_ADMIN_PASSWORD ?? 'admin123',
@@ -34,18 +34,18 @@ test.describe('frontend route coverage', () => {
   });
 
   test('admin routes block visitors and render for authenticated admin', async ({ page, request }) => {
-    await page.goto(`${frontendUrl}/admin/orders`);
+    await page.goto(`${adminUrl}/orders`);
     await expect(page.getByTestId('admin-login-email')).toBeVisible();
 
     await installAdminSession(page, request);
 
-    await page.goto(`${frontendUrl}/admin`);
+    await page.goto(`${adminUrl}`);
     await expect(page.getByTestId('admin-dashboard')).toBeAttached();
 
-    await page.goto(`${frontendUrl}/admin/orders`);
+    await page.goto(`${adminUrl}/orders`);
     await expect(page.getByRole('heading', { name: 'Pedidos' }).nth(1)).toBeVisible();
 
-    await page.goto(`${frontendUrl}/admin/settings`);
+    await page.goto(`${adminUrl}/settings`);
     await expect(page.getByRole('heading', { name: 'Configuracoes' }).nth(1)).toBeVisible();
   });
 
@@ -56,7 +56,7 @@ test.describe('frontend route coverage', () => {
     const body = await response.json();
     const adminOrder = await getAdminOrderByCode(request, body.order.orderCode);
 
-    await page.goto(`${frontendUrl}/admin/orders/${adminOrder.id}`);
+    await page.goto(`${adminUrl}/orders/${adminOrder.id}`);
     await expect(page.getByRole('heading', { name: body.order.orderCode }).first()).toBeVisible({ timeout: 10_000 });
   });
 
@@ -66,8 +66,9 @@ test.describe('frontend route coverage', () => {
       window.localStorage.setItem('amc_admin_user', JSON.stringify({ name: 'Fake', email: 'fake@example.com', role: 'ADMIN' }));
     });
 
-    await page.goto(`${frontendUrl}/admin/orders`);
-    await expect(page.getByRole('heading', { name: 'Pedidos' }).nth(1)).toBeVisible();
-    await expect(page.getByText(/nao conseguimos carregar/i)).toBeVisible();
+    await page.goto(`${adminUrl}/orders`);
+    // A API recusa o token (401) e o app encerra a sessao, voltando ao login.
+    await expect(page.getByTestId('admin-login-email')).toBeVisible({ timeout: 10_000 });
+    expect(await page.evaluate(() => window.localStorage.getItem('amc_admin_token'))).toBeNull();
   });
 });

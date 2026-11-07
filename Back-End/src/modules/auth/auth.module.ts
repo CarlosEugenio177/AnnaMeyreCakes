@@ -4,7 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { StringValue } from 'ms';
 import { requireEnv } from '../../common/utils/env';
 import { UsersModule } from '../users/users.module';
-import { AdminAuthController, PublicAuthController } from './auth.controller';
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
@@ -19,7 +19,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       },
     }),
   ],
-  controllers: [PublicAuthController, AdminAuthController],
+  controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })

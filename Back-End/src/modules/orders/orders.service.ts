@@ -20,6 +20,13 @@ type CalculatedCake = {
   unitPrice: Decimal;
   fillingExtraPrice: Decimal;
   cake: CreateCakeOrderDto;
+  description: {
+    dough: string;
+    slices: number;
+    filling1: string;
+    filling2: string;
+    topping: string;
+  };
 };
 
 type CalculatedSweet = {
@@ -27,7 +34,14 @@ type CalculatedSweet = {
   totalPrice: Decimal;
   maxFlavors: number;
   sweet: CreateSweetOrderDto;
+  description: {
+    sweetType: string;
+    flavors: string[];
+  };
 };
+
+const STORE_TIME_ZONE = 'America/Sao_Paulo';
+const MIN_NOTICE_DAYS = 3;
 
 @Injectable()
 export class OrdersService {
@@ -63,6 +77,8 @@ export class OrdersService {
     const whatsappMessage = this.buildWhatsAppMessage({
       orderCode,
       dto,
+      cake: calculatedCake,
+      sweets: calculatedSweets,
       totalPrice,
       depositPrice,
       remainingPrice,
@@ -232,6 +248,13 @@ export class OrdersService {
       cake,
       fillingExtraPrice,
       unitPrice,
+      description: {
+        dough: dough.name,
+        slices: cakeSize.slices,
+        filling1: filling1.name,
+        filling2: filling2.name,
+        topping: topping.name,
+      },
     };
   }
 
@@ -278,6 +301,10 @@ export class OrdersService {
       unitPrice,
       totalPrice,
       maxFlavors,
+      description: {
+        sweetType: sweetType.name,
+        flavors: sweetType.flavors.map((flavor) => flavor.name),
+      },
     };
   }
 
@@ -303,15 +330,36 @@ export class OrdersService {
       throw new BadRequestException('Data desejada inválida');
     }
 
-    const minDate = new Date();
-    minDate.setDate(minDate.getDate() + 3);
-    minDate.setHours(0, 0, 0, 0);
+    // Compara apenas o dia (AAAA-MM-DD). A data escolhida chega como dia de
+    // calendario e o "hoje" e calculado no fuso da loja, nao no do servidor.
+    const desiredDay = date.toISOString().slice(0, 10);
+    const minDay = this.addDays(this.todayInStoreTimeZone(), MIN_NOTICE_DAYS);
 
-    if (date < minDate) {
+    if (desiredDay < minDay) {
       throw new BadRequestException(
-        'Data de entrega deve ter antecedência mínima de 3 dias',
+        `Data de entrega deve ter antecedência mínima de ${MIN_NOTICE_DAYS} dias`,
       );
     }
+  }
+
+  private todayInStoreTimeZone(): string {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: STORE_TIME_ZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+  }
+
+  private addDays(day: string, days: number): string {
+    const date = new Date(`${day}T00:00:00.000Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
+  private formatDay(value: string): string {
+    const [year, month, day] = new Date(value).toISOString().slice(0, 10).split('-');
+    return `${day}/${month}/${year}`;
   }
 
   private async generateOrderCode(): Promise<string> {
@@ -336,11 +384,21 @@ export class OrdersService {
   private buildWhatsAppMessage(params: {
     orderCode: string;
     dto: CreateOrderDto;
+    cake: CalculatedCake;
+    sweets: CalculatedSweet[];
     totalPrice: Decimal;
     depositPrice: Decimal;
     remainingPrice: Decimal;
   }): string {
-    const { orderCode, dto, totalPrice, depositPrice, remainingPrice } = params;
+    const { orderCode, dto, cake, sweets, totalPrice, depositPrice, remainingPrice } =
+      params;
+    const sweetLines =
+      sweets.length > 0
+        ? sweets.map(
+            (sweet) =>
+              `- ${sweet.sweet.quantity} ${sweet.description.sweetType}: ${sweet.description.flavors.join(', ')}`,
+          )
+        : ['- Nenhum'];
 
     return [
       '*Pedido Anna Meyre Cakes*',
@@ -348,7 +406,17 @@ export class OrdersService {
       `Codigo: ${orderCode}`,
       `Cliente: ${dto.customerName}`,
       `WhatsApp: ${dto.customerPhone}`,
-      `Data desejada: ${dto.desiredDate}`,
+      ...(dto.customerAddress ? [`Endereco: ${dto.customerAddress}`] : []),
+      `Data desejada: ${this.formatDay(dto.desiredDate)}`,
+      '',
+      '*Bolo*',
+      `Tamanho: ${cake.description.slices} fatias`,
+      `Massa: ${cake.description.dough}`,
+      `Recheios: ${cake.description.filling1} + ${cake.description.filling2}`,
+      `Cobertura: ${cake.description.topping}`,
+      '',
+      '*Docinhos*',
+      ...sweetLines,
       '',
       '*Resumo financeiro*',
       `Valor total: R$ ${decimalToNumber(totalPrice).toFixed(2)}`,

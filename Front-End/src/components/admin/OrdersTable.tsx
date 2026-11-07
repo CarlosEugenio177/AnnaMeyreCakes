@@ -1,6 +1,7 @@
 import { Eye } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import type { AdminOrder, OrderStatus } from '../../types';
+import { formatDate, formatDeliveryDate } from '../../utils/date';
 import { currency, toNumber } from '../../utils/pricePreview';
 import { orderStatuses, statusLabels } from '../../utils/statusLabels';
 import { Button } from '../ui/Button';
@@ -95,13 +96,13 @@ export function OrdersTable({
                 ) : null}
                 <td className="px-4 py-3 align-middle">
                   <span className="block font-bold text-cocoa">{order.orderCode}</span>
-                  <span className="text-xs text-muted">{new Date(order.createdAt).toLocaleDateString('pt-BR')}</span>
+                  <span className="text-xs text-muted">{formatDate(order.createdAt)}</span>
                 </td>
                 <td className="px-4 py-3 align-middle">
                   <span className="block text-sm font-semibold text-cocoa">{order.customer.name}</span>
                   <span className="text-xs text-muted">{order.customer.phone}</span>
                 </td>
-                <td className="px-4 py-3 align-middle text-sm font-semibold text-cocoa">{new Date(order.desiredDate).toLocaleDateString('pt-BR')}</td>
+                <td className="px-4 py-3 align-middle text-sm font-semibold text-cocoa">{formatDeliveryDate(order.desiredDate)}</td>
                 <td className="px-4 py-3 align-middle"><StatusBadge status={order.status} /></td>
                 {canChangeStatus ? (
                   <td className="px-4 py-3 align-middle">
@@ -157,7 +158,7 @@ export function OrdersTable({
               <StatusBadge status={order.status} />
             </div>
             <div className="mt-4 flex items-end justify-between gap-4">
-              <p className="text-sm text-muted">Entrega {new Date(order.desiredDate).toLocaleDateString('pt-BR')}</p>
+              <p className="text-sm text-muted">Entrega {formatDeliveryDate(order.desiredDate)}</p>
               <p className="font-bold text-brand">{currency.format(toNumber(order.totalPrice))}</p>
             </div>
             {canChangeStatus ? (

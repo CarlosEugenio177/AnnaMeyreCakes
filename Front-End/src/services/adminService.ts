@@ -22,7 +22,7 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
 }
 
 export async function updateOrderStatusesBulk(orderIds: string[], status: OrderStatus) {
-  const { data } = await api.patch<{ updatedCount: number; orders: AdminOrder[] }>('/api/admin/orders/status', {
+  const { data } = await api.patch<{ updatedCount: number; orders: AdminOrder[] }>('/admin/orders/status', {
     orderIds,
     status,
   });

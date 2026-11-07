@@ -41,14 +41,3 @@ export class CustomersController {
     return this.customersService.getReorderPayload(customer.id, id);
   }
 }
-
-@Controller('api/customer')
-export class ApiCustomersController {
-  constructor(private readonly customersService: CustomersService) {}
-
-  @Get('me')
-  @UseGuards(CustomerSessionGuard)
-  getMe(@CurrentCustomer() customer: Customer) {
-    return this.customersService.getProfile(customer);
-  }
-}

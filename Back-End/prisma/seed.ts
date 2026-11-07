@@ -1,5 +1,5 @@
 import { PrismaClient, StoreStatus, UserRole } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -89,10 +89,10 @@ async function main() {
     upsertFilling('33333333-3333-4333-8333-333333333302', 'Brigadeiro chocolate', 0, '#553022'),
     upsertFilling('33333333-3333-4333-8333-333333333303', 'Brigadeiro de oreo', 0, '#d8d4cc'),
     upsertFilling('33333333-3333-4333-8333-333333333304', 'Brigadeiro de coco', 0, '#fffafa'),
-    upsertFilling('33333333-3333-4333-8333-333333333305', 'Brigadeiro de limao', 0, '#e4f19f'),
+    upsertFilling('33333333-3333-4333-8333-333333333305', 'Brigadeiro de limão', 0, '#e4f19f'),
     upsertFilling('33333333-3333-4333-8333-333333333306', 'Brigadeiro castanha', 0, '#b98b56'),
     upsertFilling('33333333-3333-4333-8333-333333333307', 'Brigadeiro de ninho', 0, '#f8efd9'),
-    upsertFilling('33333333-3333-4333-8333-333333333308', 'Pacoca de amendoim', 0, '#d4a15f'),
+    upsertFilling('33333333-3333-4333-8333-333333333308', 'Paçoca de amendoim', 0, '#d4a15f'),
     upsertFilling('33333333-3333-4333-8333-333333333309', 'Romeu e Julieta', 0, '#db6671'),
     upsertFilling('33333333-3333-4333-8333-333333333310', 'Nutella', 30, '#4a281a'),
     upsertFilling('33333333-3333-4333-8333-333333333311', 'Morango', 30, '#df4b57'),
@@ -135,7 +135,7 @@ async function main() {
     'castanha',
     'ninho com Nutella',
     'Romeu e Julieta',
-    'torta de limao',
+    'torta de limão',
     'uvinha',
     'brigadeiro meio amargo',
   ]);
@@ -182,19 +182,13 @@ function upsertTopping(id: string, name: string, colorHex: string) {
 
 async function seedSweetFlavors(sweetTypeId: string, names: string[]) {
   for (const [index, name] of names.entries()) {
-    const existing = await prisma.sweetFlavor.findFirst({
-      where: { sweetTypeId, name },
-    });
+    const id = `66666666-6666-4666-8666-${sweetTypeId.slice(-6)}${String(index + 1).padStart(6, '0')}`;
 
-    if (!existing) {
-      await prisma.sweetFlavor.create({
-        data: {
-          id: `66666666-6666-4666-8666-${sweetTypeId.slice(-6)}${String(index + 1).padStart(6, '0')}`,
-          sweetTypeId,
-          name,
-        },
-      });
-    }
+    await prisma.sweetFlavor.upsert({
+      where: { id },
+      update: { name, sweetTypeId, isActive: true },
+      create: { id, sweetTypeId, name },
+    });
   }
 }
 

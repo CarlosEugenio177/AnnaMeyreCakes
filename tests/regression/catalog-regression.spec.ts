@@ -6,7 +6,7 @@ test.describe('catalog regression', () => {
     const token = await loginAdmin(request);
     const name = `Massa Teste ${Date.now()}`;
 
-    const createResponse = await request.post('/admin/options/doughs', {
+    const createResponse = await request.post('/api/admin/options/doughs', {
       headers: authHeaders(token),
       data: { name, colorHex: '#f1c7d2' },
     });
@@ -18,7 +18,7 @@ test.describe('catalog regression', () => {
     expect(createdPublic?.publicId).toBe(created.id);
 
     const renamed = `${name} Editada`;
-    const updateResponse = await request.patch(`/admin/options/doughs/${created.id}`, {
+    const updateResponse = await request.patch(`/api/admin/options/doughs/${created.id}`, {
       headers: authHeaders(token),
       data: { name: renamed, colorHex: '#f1c7d2' },
     });
@@ -28,7 +28,7 @@ test.describe('catalog regression', () => {
     const renamedPublic = publicAfterRename.doughs.find((item) => item.name === renamed);
     expect(renamedPublic?.publicId).toBe(created.id);
 
-    const deactivateResponse = await request.delete(`/admin/options/doughs/${created.id}`, {
+    const deactivateResponse = await request.delete(`/api/admin/options/doughs/${created.id}`, {
       headers: authHeaders(token),
     });
     expect(deactivateResponse.ok()).toBeTruthy();

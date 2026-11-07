@@ -1,4 +1,4 @@
-import { AlertCircle } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 type StoreStatusBannerProps = {
   closed?: boolean;
@@ -10,15 +10,11 @@ export function StoreStatusBanner({ closed }: StoreStatusBannerProps) {
   }
 
   return (
-    <div className="mx-5 flex items-start gap-3 rounded-[22px] border border-brand/25 bg-brand/10 px-4 py-4 text-brand shadow-[0_12px_24px_rgba(230,30,77,0.1)] md:mx-0 md:px-5">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white">
-        <AlertCircle className="h-6 w-6" aria-hidden />
-      </span>
+    <div className="flex items-start gap-3 rounded-2xl border border-brand/20 bg-brand/[0.06] p-4 text-cocoa">
+      <Clock className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
       <div>
-        <p className="font-display text-xl font-bold leading-tight text-brand md:text-2xl">Loja temporariamente fechada</p>
-        <p className="mt-1.5 text-base font-semibold leading-relaxed text-cocoa md:text-lg">
-          No momento nao estamos aceitando encomendas. Voce pode navegar e montar seu bolo, mas a finalizacao esta bloqueada.
-        </p>
+        <p className="font-semibold text-brand">Estamos com a agenda fechada no momento</p>
+        <p className="mt-0.5 text-sm text-muted">Você pode montar seu bolo à vontade, mas novos pedidos ficam pausados até reabrirmos.</p>
       </div>
     </div>
   );

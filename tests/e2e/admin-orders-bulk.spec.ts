@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { authHeaders, getAdminOrderByCode, loginAdmin } from '../helpers/api-fixtures';
-import { frontendUrl } from '../helpers/frontend';
+import { adminUrl } from '../helpers/frontend';
 import { createCustomerOrder } from '../helpers/order-fixtures';
 
 test.describe('admin bulk order status flow', () => {
@@ -11,7 +11,7 @@ test.describe('admin bulk order status flow', () => {
     expect(first.response.ok()).toBeTruthy();
     expect(second.response.ok()).toBeTruthy();
 
-    const login = await request.post('/admin/login', {
+    const login = await request.post('/api/auth/login', {
       data: {
         email: process.env.E2E_ADMIN_EMAIL ?? process.env.SEED_ADMIN_EMAIL ?? 'admin@annameyrecakes.local',
         password: process.env.E2E_ADMIN_PASSWORD ?? process.env.SEED_ADMIN_PASSWORD ?? 'admin123',
@@ -25,7 +25,7 @@ test.describe('admin bulk order status flow', () => {
       window.localStorage.setItem('amc_admin_user', JSON.stringify(adminSession.user));
     }, session);
 
-    await page.goto(`${frontendUrl}/admin/orders`);
+    await page.goto(`${adminUrl}/orders`);
     await page.getByPlaceholder('Buscar por codigo, cliente ou telefone').fill(suffix);
     await expect(page.getByTestId('orders-select-all')).toBeVisible();
     await page.getByTestId('orders-select-all').check();

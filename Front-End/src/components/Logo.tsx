@@ -4,18 +4,10 @@ type LogoProps = {
 
 export function Logo({ compact = false }: LogoProps) {
   return (
-    <div className="mx-auto flex flex-col items-center">
-      <div
-        className={`overflow-hidden rounded-full border border-brand/15 bg-white shadow-sm ${
-          compact ? 'h-16 w-16' : 'h-28 w-28'
-        }`}
-      >
-        <img
-          src="/anna-meyre-logo-cropped.png"
-          alt="Anna Meyre Cakes"
-          className="h-full w-full object-contain p-1.5"
-        />
-      </div>
-    </div>
+    <img
+      src="/anna-meyre-logo-cropped.png"
+      alt="Anna Meyre Cakes"
+      className={`rounded-full bg-surface object-contain ring-1 ring-line ${compact ? 'h-11 w-11 p-0.5' : 'h-24 w-24 p-1'}`}
+    />
   );
 }

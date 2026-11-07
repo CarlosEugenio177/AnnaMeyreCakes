@@ -10,13 +10,3 @@ export class SettingsPublicController {
     return this.settingsService.getPublicSettings();
   }
 }
-
-@Controller('api/public/settings')
-export class ApiPublicSettingsController {
-  constructor(private readonly settingsService: SettingsService) {}
-
-  @Get()
-  getSettings() {
-    return this.settingsService.getPublicSettings();
-  }
-}

@@ -1,4 +1,5 @@
 import { CalendarClock, ClipboardList, DollarSign, Store, TrendingUp } from 'lucide-react';
+import { adminPath } from '../../config/admin';
 import { useEffect, useState } from 'react';
 import { AdminCard } from '../../components/admin/AdminCard';
 import { AdminLayout } from '../../components/admin/AdminLayout';
@@ -73,9 +74,9 @@ export function Dashboard({ navigate }: DashboardProps) {
             <h2 className="font-display text-2xl font-bold text-roseText">Ultimos pedidos</h2>
             <p className="mt-1 text-sm text-muted">Pedidos recentes para acompanhamento rapido.</p>
           </div>
-          <Button variant="secondary" onClick={() => navigate('/admin/orders')}>Ver todos</Button>
+          <Button variant="secondary" onClick={() => navigate(adminPath('/orders'))}>Ver todos</Button>
         </div>
-        {isLoading ? <LoadingSkeleton /> : recentOrders.length > 0 ? <OrdersTable orders={recentOrders} onOpen={(id) => navigate(`/admin/orders/${id}`)} /> : <EmptyState title="Nenhum pedido recebido" description="Quando um cliente finalizar um pedido, ele aparecera aqui." />}
+        {isLoading ? <LoadingSkeleton /> : recentOrders.length > 0 ? <OrdersTable orders={recentOrders} onOpen={(id) => navigate(adminPath(`/orders/${id}`))} /> : <EmptyState title="Nenhum pedido recebido" description="Quando um cliente finalizar um pedido, ele aparecera aqui." />}
       </AdminCard>
     </AdminLayout>
   );

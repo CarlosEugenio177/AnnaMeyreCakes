@@ -16,20 +16,20 @@ export function OptionCard({ children, selected = false, disabled = false, color
     <button
       type="button"
       data-testid={testId}
+      aria-pressed={selected}
       disabled={disabled}
       onClick={onClick}
-      className={`min-h-[86px] rounded-[22px] border bg-white px-5 py-4 text-left transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 md:min-h-[104px] md:px-6 lg:min-h-[78px] lg:rounded-[16px] lg:px-3.5 lg:py-2.5 ${
-        selected ? 'border-cocoa bg-blush/45 text-cocoa shadow-[0_14px_36px_rgba(138,75,62,0.12),0_0_0_1px_rgba(138,75,62,0.18)] lg:shadow-[0_8px_20px_rgba(138,75,62,0.08),0_0_0_1px_rgba(138,75,62,0.16)]' : 'border-line text-cocoa shadow-[0_10px_28px_rgba(138,75,62,0.035)] hover:border-cocoa/35 lg:shadow-[0_6px_16px_rgba(138,75,62,0.025)]'
+      className={`relative flex min-h-[60px] w-full items-center gap-2.5 rounded-2xl border py-3 pl-3 pr-8 text-left text-cocoa transition disabled:cursor-not-allowed disabled:opacity-40 sm:gap-3 sm:pl-4 ${
+        selected ? 'border-brand bg-brand/[0.04] ring-1 ring-brand' : 'border-line bg-surface hover:border-cocoa/25'
       } ${className}`}
     >
-      <span className="flex items-center gap-4 lg:gap-2.5">
-        {color ? <span className="h-12 w-12 shrink-0 rounded-full border border-line lg:h-7 lg:w-7" style={{ backgroundColor: color }} /> : null}
-        <span className="min-w-0">{children}</span>
-        {selected ? (
-          <span className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cocoa text-white lg:h-5 lg:w-5">
-            <Check className="h-5 w-5 lg:h-3 lg:w-3" aria-hidden />
-          </span>
-        ) : null}
+      {color ? <span className="h-6 w-6 shrink-0 rounded-full ring-1 ring-black/10 sm:h-7 sm:w-7" style={{ backgroundColor: color }} /> : null}
+      <span className="min-w-0 flex-1 break-words">{children}</span>
+      <span
+        className={`absolute right-2.5 top-2.5 grid h-[18px] w-[18px] place-items-center rounded-full transition ${selected ? 'bg-brand text-white' : 'border border-line'}`}
+        aria-hidden
+      >
+        {selected ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
       </span>
     </button>
   );

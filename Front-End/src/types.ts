@@ -17,8 +17,6 @@ export type PaymentStatus = 'PENDING' | 'PAID' | 'CANCELED';
 export type CatalogItem = {
   id: string;
   name: string;
-  colorHex?: string;
-  color_hex?: string;
   isActive?: boolean;
 };
 
@@ -143,12 +141,10 @@ export type AdminOrder = {
 };
 
 export type CustomerProfile = {
-  id?: string;
   name: string;
   phone: string;
   email?: string | null;
   address?: string | null;
-  lastSeenAt: string;
 };
 
 export type CustomerOrder = {
@@ -159,6 +155,12 @@ export type CustomerOrder = {
   depositPrice: string | number;
   remainingPrice: string | number;
   desiredDate: string;
+  notes?: string | null;
+};
+
+export type ReorderPayload = {
+  cake: CreateOrderPayload['cake'] | null;
+  sweets: SweetSelection[];
   notes?: string | null;
 };
 

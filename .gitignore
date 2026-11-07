@@ -9,3 +9,7 @@ coverage/
 **/coverage/
 *.tsbuildinfo
 **/*.tsbuildinfo
+*.log
+.vercel/
+playwright-report/
+test-results/

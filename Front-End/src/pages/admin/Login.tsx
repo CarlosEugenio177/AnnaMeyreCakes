@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { adminPath } from '../../config/admin';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -15,7 +16,7 @@ type LoginProps = {
 
 const schema = z.object({
   email: z.string().email('Informe um e-mail válido.'),
-  password: z.string().min(6, 'Informe a senha.'),
+  password: z.string().min(1, 'Informe a senha.'),
 });
 
 type LoginForm = z.infer<typeof schema>;
@@ -32,7 +33,7 @@ export function Login({ navigate }: LoginProps) {
     try {
       const session = await loginAdmin(values.email, values.password);
       setSession(session);
-      navigate('/admin');
+      navigate(adminPath());
     } catch (requestError) {
       setError(getApiErrorMessage(requestError));
     } finally {
@@ -41,38 +42,41 @@ export function Login({ navigate }: LoginProps) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-petal px-4 py-10">
-      <Card className="w-full max-w-md">
-        <Logo compact />
-        <h1 className="mt-5 text-center font-display text-3xl font-bold text-roseText">Área administrativa</h1>
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)}>
-          <Field label="E-mail" error={formState.errors.email?.message}>
-            <input className={inputClassName} {...register('email')} data-testid="admin-login-email" type="email" />
-          </Field>
-          <Field label="Senha" error={formState.errors.password?.message}>
-            <input className={inputClassName} {...register('password')} data-testid="admin-login-password" type="password" />
-          </Field>
-          {error ? <p className="rounded-[18px] bg-brand/10 px-4 py-3 text-sm font-semibold text-brand">{error}</p> : null}
-          <Button className="w-full py-5" disabled={isSubmitting} type="submit" data-testid="admin-login-submit">
-            {isSubmitting ? 'Entrando...' : 'Entrar'}
-          </Button>
-          <Button className="w-full" variant="ghost" type="button" onClick={() => navigate('/')}>
-            Voltar para o site
-          </Button>
-        </form>
-      </Card>
+    <main className="flex min-h-screen items-center justify-center bg-cream px-5 py-10 text-cocoa">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center text-center">
+          <Logo compact />
+          <h1 className="mt-5 font-display text-2xl font-semibold">Entrar</h1>
+          <p className="mt-1 text-sm text-muted">Acesso restrito à equipe.</p>
+        </div>
+        <Card className="mt-6">
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            <Field label="E-mail" error={formState.errors.email?.message}>
+              <input className={inputClassName} {...register('email')} data-testid="admin-login-email" type="email" autoComplete="username" />
+            </Field>
+            <Field label="Senha" error={formState.errors.password?.message}>
+              <input className={inputClassName} {...register('password')} data-testid="admin-login-password" type="password" autoComplete="current-password" />
+            </Field>
+            {error ? <p className="rounded-xl bg-brand/10 px-4 py-3 text-sm font-medium text-brand">{error}</p> : null}
+            <Button className="min-h-12 w-full" disabled={isSubmitting} type="submit" data-testid="admin-login-submit">
+              {isSubmitting ? 'Entrando...' : 'Entrar'}
+            </Button>
+          </form>
+        </Card>
+      </div>
     </main>
   );
 }
 
-const inputClassName = 'min-h-14 w-full rounded-[22px] border border-brand/10 px-4 outline-none focus:border-brand';
+const inputClassName =
+  'min-h-12 w-full rounded-xl border border-line bg-surface px-4 text-sm text-cocoa outline-none transition focus:border-cocoa/40 focus:ring-2 focus:ring-blush';
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-bold text-roseText">{label}</span>
+      <span className="mb-1.5 block text-sm font-medium">{label}</span>
       {children}
-      {error ? <span className="mt-1 block text-xs font-semibold text-brand">{error}</span> : null}
+      {error ? <span className="mt-1 block text-xs font-medium text-brand">{error}</span> : null}
     </label>
   );
 }

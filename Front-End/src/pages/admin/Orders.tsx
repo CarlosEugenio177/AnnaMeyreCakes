@@ -1,4 +1,5 @@
 import { RefreshCw, Search, X } from 'lucide-react';
+import { adminPath } from '../../config/admin';
 import { useEffect, useMemo, useState } from 'react';
 import { AdminCard } from '../../components/admin/AdminCard';
 import { AdminLayout } from '../../components/admin/AdminLayout';
@@ -262,7 +263,7 @@ export function Orders({ navigate }: OrdersProps) {
       ) : filteredOrders.length > 0 ? (
         <OrdersTable
           allVisibleSelected={allVisibleSelected}
-          onOpen={(id) => navigate(`/admin/orders/${id}`)}
+          onOpen={(id) => navigate(adminPath(`/orders/${id}`))}
           onStatusChange={handleSingleStatusChange}
           onToggleAll={toggleAllVisible}
           onToggleSelection={toggleSelection}

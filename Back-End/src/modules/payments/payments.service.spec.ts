@@ -14,7 +14,10 @@ describe('PaymentsService', () => {
   };
   beforeEach(() => {
     jest.clearAllMocks();
-    tx.order.findUnique.mockResolvedValue({ depositPrice: new Decimal(120) });
+    tx.order.findUnique.mockResolvedValue({
+      depositPrice: new Decimal(120),
+      status: OrderStatus.NEW,
+    });
   });
 
   it('creates a paid payment and moves order to deposit paid when paid total reaches deposit', async () => {
@@ -53,6 +56,25 @@ describe('PaymentsService', () => {
       paymentMethod: PaymentMethod.PIX,
     });
 
+    expect(tx.order.update).not.toHaveBeenCalled();
+  });
+
+  it('does not move back orders that are already past the deposit step', async () => {
+    tx.order.findUnique.mockResolvedValue({
+      depositPrice: new Decimal(120),
+      status: OrderStatus.IN_PRODUCTION,
+    });
+    tx.paymentRecord.create.mockResolvedValue({
+      id: 'payment-id',
+      status: PaymentStatus.PAID,
+    });
+
+    await new PaymentsService(prisma as never).createPayment('order-id', {
+      amount: 120,
+      paymentMethod: PaymentMethod.PIX,
+    });
+
+    expect(tx.paymentRecord.aggregate).not.toHaveBeenCalled();
     expect(tx.order.update).not.toHaveBeenCalled();
   });
 

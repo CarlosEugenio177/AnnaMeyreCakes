@@ -1,42 +1,60 @@
 import type { Catalog, SweetSelection } from '../../types';
 import { calculatePricePreview, currency } from '../../utils/pricePreview';
-import { Card } from '../ui/Card';
 
-type OrderSummaryCardProps = {
+export type OrderSummaryProps = {
   catalog?: Catalog | null;
+  doughId?: string;
   cakeSizeId?: string;
   filling1Id?: string;
   filling2Id?: string;
+  toppingId?: string;
   sweets: SweetSelection[];
 };
 
-export function OrderSummaryCard(props: OrderSummaryCardProps) {
+export function OrderSummaryCard(props: OrderSummaryProps) {
+  const { catalog, doughId, cakeSizeId, filling1Id, filling2Id, toppingId, sweets } = props;
   const preview = calculatePricePreview(props);
+  const findName = <T extends { id: string; name: string }>(items: T[] | undefined, id?: string) => items?.find((item) => item.id === id)?.name;
+  const size = catalog?.cakeSizes.find((item) => item.id === cakeSizeId);
+  const fillings = [findName(catalog?.fillings, filling1Id), findName(catalog?.fillings, filling2Id)].filter(Boolean).join(' + ');
 
   return (
-    <Card className="space-y-2.5 border-transparent bg-white p-3.5 shadow-none md:p-3.5" data-testid="order-summary">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold text-roseText">Resumo</h2>
-        <span className="text-xs font-bold uppercase text-softGray">Prévia</span>
+    <div data-testid="order-summary">
+      <h2 className="font-display text-xl font-semibold text-cocoa">Seu pedido</h2>
+
+      <dl className="mt-4 space-y-2.5 text-sm">
+        <Row label="Massa" value={findName(catalog?.doughs, doughId)} />
+        <Row label="Tamanho" value={size ? `${size.slices} fatias` : undefined} />
+        <Row label="Recheios" value={fillings || undefined} />
+        <Row label="Cobertura" value={findName(catalog?.toppings, toppingId)} />
+        {sweets.map((sweet, index) => (
+          <Row key={index} label="Docinhos" value={`${sweet.quantity} ${findName(catalog?.sweetTypes, sweet.sweetTypeId)?.toLowerCase() ?? ''}`} />
+        ))}
+      </dl>
+
+      <div className="mt-5 space-y-1.5 border-t border-dashed border-line pt-4 text-sm">
+        <div data-testid="order-total" className="flex items-baseline justify-between">
+          <span className="font-semibold text-cocoa">Total</span>
+          <span className="font-display text-2xl font-semibold text-cocoa">{currency.format(preview.total)}</span>
+        </div>
+        <div className="flex justify-between text-muted">
+          <span>Entrada de 50% para reservar</span>
+          <span>{currency.format(preview.deposit)}</span>
+        </div>
+        <div className="flex justify-between text-muted">
+          <span>Restante na entrega</span>
+          <span>{currency.format(preview.remaining)}</span>
+        </div>
       </div>
-      <div className="rounded-[16px] bg-petal/65 p-2.5">
-        <SummaryRow label="Bolo" value={currency.format(preview.cakeTotal)} />
-        <SummaryRow label="Docinhos" value={currency.format(preview.sweetTotal)} />
-      </div>
-      <div className="rounded-[16px] border border-brand/10 bg-white p-2.5">
-        <SummaryRow label="Total" value={currency.format(preview.total)} strong testId="order-total" />
-        <SummaryRow label="Entrada 50%" value={currency.format(preview.deposit)} />
-        <SummaryRow label="Restante" value={currency.format(preview.remaining)} />
-      </div>
-    </Card>
+    </div>
   );
 }
 
-function SummaryRow({ label, value, strong = false, testId }: { label: string; value: string; strong?: boolean; testId?: string }) {
+function Row({ label, value }: { label: string; value?: string }) {
   return (
-    <div data-testid={testId} className={`flex items-center justify-between gap-4 py-0.5 text-xs ${strong ? 'text-sm font-bold text-brand' : 'text-cocoa'}`}>
-      <span>{label}</span>
-      <span>{value}</span>
+    <div className="flex justify-between gap-4">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right font-medium text-cocoa">{value ?? '—'}</dd>
     </div>
   );
 }

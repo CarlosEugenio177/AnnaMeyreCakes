@@ -16,7 +16,7 @@ test.describe('pricing regression', () => {
     expect(size15.price).toBeDefined();
     expect(size20.price).toBeDefined();
 
-    const firstCakeResponse = await request.post('/orders', {
+    const firstCakeResponse = await request.post('/api/orders', {
       data: makeOrderPayload(catalog, {
         customerPhone: `(86) 98888-${String(Date.now()).slice(-4)}`,
         cake: {
@@ -33,7 +33,7 @@ test.describe('pricing regression', () => {
     expect(numberValue(firstCake.order.totalPrice)).toBe(numberValue(size15.price));
 
     const expectedCake20 = numberValue(size20.price) + numberValue(morango.extraPrice) + numberValue(nutella.extraPrice);
-    const secondCakeResponse = await request.post('/orders', {
+    const secondCakeResponse = await request.post('/api/orders', {
       data: makeOrderPayload(catalog, {
         customerPhone: `(86) 97777-${String(Date.now()).slice(-4)}`,
         cake: {
@@ -49,7 +49,7 @@ test.describe('pricing regression', () => {
     const secondCake = await secondCakeResponse.json();
     expect(numberValue(secondCake.order.totalPrice)).toBe(expectedCake20);
 
-    const sweetResponse = await request.post('/orders', {
+    const sweetResponse = await request.post('/api/orders', {
       data: makeOrderPayload(catalog, {
         customerPhone: `(86) 96666-${String(Date.now()).slice(-4)}`,
         cake: {

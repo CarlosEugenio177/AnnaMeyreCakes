@@ -18,6 +18,7 @@ import { useCustomerStore } from '../store/customerStore';
 import { useOrderStore } from '../store/orderStore';
 import { useSettingsStore } from '../store/settingsStore';
 import type { Catalog, CustomerData } from '../types';
+import { getMinimumOrderDate } from '../utils/date';
 import { getMaxSweetFlavors } from '../utils/sweetRules';
 
 type BuilderProps = {
@@ -48,6 +49,7 @@ export function Builder({ navigate }: BuilderProps) {
     register,
     handleSubmit,
     setValue,
+    resetField,
     formState: { errors },
   } = useForm<CustomerData>({
     resolver: zodResolver(customerSchema),
@@ -67,13 +69,7 @@ export function Builder({ navigate }: BuilderProps) {
     getCatalog()
       .then((data) => {
         setCatalog(data);
-        useOrderStore.setState((state) => ({
-          selectedDoughId: state.selectedDoughId ?? data.doughs[0]?.id,
-          selectedCakeSizeId: state.selectedCakeSizeId ?? data.cakeSizes[0]?.id,
-          selectedFilling1Id: state.selectedFilling1Id ?? data.fillings[0]?.id,
-          selectedFilling2Id: state.selectedFilling2Id ?? data.fillings[1]?.id ?? data.fillings[0]?.id,
-          selectedToppingId: state.selectedToppingId ?? data.toppings[0]?.id,
-        }));
+        applyCatalogDefaults(data);
       })
       .catch(() => setCatalogError('Não foi possível carregar o catálogo.'));
   }, [loadCustomer, loadSettings]);
@@ -131,10 +127,17 @@ export function Builder({ navigate }: BuilderProps) {
       });
       await loadCustomer();
       order.resetOrder();
-      const whatsappTab = window.open(response.whatsapp.link, '_blank');
+      if (catalog) {
+        applyCatalogDefaults(catalog);
+      }
+      resetField('desiredDate');
+      resetField('notes');
 
+      // Se o navegador bloquear a nova aba (comum apos uma requisicao assincrona),
+      // abre o WhatsApp na propria aba: o pedido ja esta salvo.
+      const whatsappTab = window.open(response.whatsapp.link, '_blank');
       if (!whatsappTab) {
-        setFormError('Pedido criado. Permita pop-ups para abrir o WhatsApp em uma nova aba.');
+        window.location.assign(response.whatsapp.link);
       }
     } catch (error) {
       setFormError(getApiErrorMessage(error));
@@ -144,56 +147,64 @@ export function Builder({ navigate }: BuilderProps) {
   }
 
   return (
-    <main className="min-h-screen bg-petal pb-28 text-cocoa md:pb-0" data-testid="builder-page">
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/95 px-5 py-4 backdrop-blur lg:py-2.5">
-        <div className="mx-auto grid max-w-[1180px] grid-cols-[1fr_auto_1fr] items-center">
-          <Button variant="ghost" onClick={() => navigate('/')} className="justify-self-start px-0 text-xl font-normal lg:min-h-9 lg:text-sm">
+    <main className="min-h-screen bg-cream pb-28 text-cocoa lg:pb-16" data-testid="builder-page">
+      <header className="sticky top-0 z-30 border-b border-line bg-cream/90 backdrop-blur">
+        <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-5">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-1.5 justify-self-start text-sm font-medium text-muted hover:text-cocoa"
+          >
             <ArrowLeft className="h-4 w-4" aria-hidden />
-            Voltar
-          </Button>
+            Início
+          </button>
           <Logo compact />
           <span aria-hidden />
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-[1160px] pb-8 md:px-6 lg:px-7">
-        <div className="px-5 py-12 text-center md:px-0 md:py-12 md:text-left lg:max-w-xl lg:pb-5 lg:pt-6">
-          <h1 className="font-display text-[52px] leading-none text-cocoa md:text-6xl lg:text-[42px]">Crie a receita do seu dia.</h1>
-          <p className="mx-auto mt-8 max-w-2xl text-[26px] leading-snug text-muted md:mx-0 lg:mt-3 lg:max-w-lg lg:text-base lg:leading-7">
-            Escolha cada detalhe com calma, a gente prepara com afeto.
-          </p>
+      <div className="mx-auto max-w-6xl px-5">
+        <div className="py-8 sm:py-10">
+          <p className="text-sm font-medium text-brand">Encomenda personalizada</p>
+          <h1 className="mt-1 font-display text-3xl font-semibold leading-tight sm:text-4xl">Monte o seu bolo</h1>
+          <p className="mt-2 max-w-xl text-muted">Escolha cada detalhe com calma. O valor é atualizado na hora.</p>
         </div>
 
-        <StoreStatusBanner closed={isClosed} />
+        <div className="space-y-4">
+          <StoreStatusBanner closed={isClosed} />
 
-        {customer ? (
-          <div className="mx-5 mb-5 flex flex-col gap-3 rounded-[22px] border border-line bg-white/80 px-5 py-4 text-cocoa shadow-[0_12px_32px_rgba(138,75,62,0.04)] md:mx-0 md:flex-row md:items-center md:justify-between lg:mb-4 lg:min-h-[64px] lg:rounded-[20px] lg:border-brand/10 lg:bg-blush/35 lg:px-4 lg:py-2.5 lg:shadow-[0_8px_22px_rgba(138,75,62,0.035)]" data-testid="customer-greeting">
-            <div className="min-w-0">
-              <p className="font-semibold">Olá, {customer.name}! Seus dados já estão preenchidos.</p>
-              <p className="text-sm text-muted">Você pode alterar qualquer informação antes de finalizar.</p>
+          {customer ? (
+            <div
+              className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+              data-testid="customer-greeting"
+            >
+              <div>
+                <p className="font-semibold">Que bom te ver de novo, {customer.name}!</p>
+                <p className="text-sm text-muted">Seus dados já estão preenchidos.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="secondary" onClick={() => navigate('/meus-pedidos')} data-testid="customer-orders-link">
+                  Meus pedidos
+                </Button>
+                <Button type="button" variant="ghost" onClick={() => void logout()} data-testid="customer-logout-button">
+                  Sair
+                </Button>
+              </div>
             </div>
-            <div className="flex shrink-0 gap-2">
-              <Button type="button" variant="secondary" onClick={() => navigate('/meus-pedidos')} className="px-3 py-2 text-sm lg:min-h-9 lg:border-brand/15 lg:bg-white/80 lg:px-4 lg:text-xs" data-testid="customer-orders-link">
-                Meus pedidos
-              </Button>
-              <Button type="button" variant="ghost" onClick={() => void logout()} className="px-3 py-2 text-sm lg:min-h-9 lg:px-3 lg:text-xs" data-testid="customer-logout-button">
-                Sair
-              </Button>
-            </div>
-          </div>
-        ) : null}
+          ) : null}
 
-        {catalogError ? <p className="mt-5 rounded-[20px] bg-brand/10 px-4 py-3 font-semibold text-brand">{catalogError}</p> : null}
+          {catalogError ? <p className="rounded-2xl bg-brand/10 p-4 font-medium text-brand">{catalogError}</p> : null}
+        </div>
 
         {!catalog ? (
-          <div className="mt-8 rounded-[28px] bg-white/80 p-8 text-center font-semibold text-softGray">Carregando catálogo...</div>
+          <div className="mt-6 grid place-items-center rounded-3xl border border-line bg-surface p-12 text-muted">Carregando o cardápio...</div>
         ) : (
           <form
             id="cake-builder-form"
-            className="grid gap-6 px-5 md:px-0 lg:grid-cols-[minmax(0,1fr)_328px] lg:items-start lg:gap-6"
+            className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start"
             onSubmit={handleSubmit(onSubmit)}
           >
-            <section className="space-y-6 lg:space-y-4">
+            <section className="space-y-4">
               <CakeBuilderForm
                 catalog={catalog}
                 selectedDoughId={order.selectedDoughId}
@@ -216,25 +227,30 @@ export function Builder({ navigate }: BuilderProps) {
                   notes: errors.notes?.message,
                 }}
               />
-              {formError ? <p className="rounded-[20px] bg-brand/10 px-4 py-3 font-semibold text-brand">{formError}</p> : null}
+              {formError ? <p className="rounded-2xl bg-brand/10 p-4 font-medium text-brand">{formError}</p> : null}
             </section>
 
-            <aside className="hidden lg:sticky lg:top-20 lg:block lg:self-start">
-              <div className="space-y-2.5 rounded-[20px] border border-line/90 bg-white/80 p-2.5 shadow-[0_12px_34px_rgba(138,75,62,0.045)] backdrop-blur">
-              <OrderSummaryCard
-                catalog={catalog}
-                cakeSizeId={order.selectedCakeSizeId}
-                filling1Id={order.selectedFilling1Id}
-                filling2Id={order.selectedFilling2Id}
-                sweets={order.sweets}
-              />
-                <Button type="submit" disabled={isClosed || isSubmitting} className="w-full min-h-11 py-2.5 text-xs" data-testid="finish-order-button">
-                <MessageCircle className="h-4 w-4" aria-hidden />
-                {isSubmitting ? 'Enviando pedido...' : 'Enviar pedido pelo WhatsApp'}
-              </Button>
-              {isClosed ? <p className="text-center text-sm font-semibold text-softGray">WhatsApp desabilitado enquanto a loja está fechada.</p> : null}
+            <aside className="hidden lg:sticky lg:top-24 lg:block">
+              <div className="rounded-3xl border border-line bg-surface p-6 shadow-soft">
+                <OrderSummaryCard
+                  catalog={catalog}
+                  doughId={order.selectedDoughId}
+                  cakeSizeId={order.selectedCakeSizeId}
+                  filling1Id={order.selectedFilling1Id}
+                  filling2Id={order.selectedFilling2Id}
+                  toppingId={order.selectedToppingId}
+                  sweets={order.sweets}
+                />
+                <Button type="submit" disabled={isClosed || isSubmitting} className="mt-6 min-h-12 w-full" data-testid="finish-order-button">
+                  <MessageCircle className="h-4 w-4" aria-hidden />
+                  {isSubmitting ? 'Enviando pedido...' : 'Enviar pedido pelo WhatsApp'}
+                </Button>
+                <p className="mt-3 text-center text-xs text-muted">
+                  {isClosed ? 'Pedidos pausados enquanto a agenda estiver fechada.' : 'O pedido é salvo e você confirma com a gente no WhatsApp.'}
+                </p>
               </div>
             </aside>
+
             <OrderSummaryBar
               catalog={catalog}
               cakeSizeId={order.selectedCakeSizeId}
@@ -251,8 +267,13 @@ export function Builder({ navigate }: BuilderProps) {
   );
 }
 
-function getMinimumOrderDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 3);
-  return date.toISOString().slice(0, 10);
+// Preenche apenas as escolhas que ainda estao vazias (preserva um "repetir pedido").
+function applyCatalogDefaults(catalog: Catalog) {
+  useOrderStore.setState((state) => ({
+    selectedDoughId: state.selectedDoughId ?? catalog.doughs[0]?.id,
+    selectedCakeSizeId: state.selectedCakeSizeId ?? catalog.cakeSizes[0]?.id,
+    selectedFilling1Id: state.selectedFilling1Id ?? catalog.fillings[0]?.id,
+    selectedFilling2Id: state.selectedFilling2Id ?? catalog.fillings[1]?.id ?? catalog.fillings[0]?.id,
+    selectedToppingId: state.selectedToppingId ?? catalog.toppings[0]?.id,
+  }));
 }

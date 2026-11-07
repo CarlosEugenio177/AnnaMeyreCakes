@@ -3,8 +3,8 @@ import { assertNoForbiddenFields } from '../helpers/api-contract';
 import { createCustomerOrder } from '../helpers/order-fixtures';
 
 test.describe('public API contract security', () => {
-  test('GET /api/public/catalog returns only public DTO fields', async ({ request }) => {
-    const response = await request.get('/api/public/catalog');
+  test('GET /api/catalog returns only public DTO fields', async ({ request }) => {
+    const response = await request.get('/api/catalog');
 
     expect(response.ok()).toBeTruthy();
     const body = await response.json();
@@ -18,8 +18,8 @@ test.describe('public API contract security', () => {
     );
   });
 
-  test('GET /api/public/settings returns only public settings', async ({ request }) => {
-    const response = await request.get('/api/public/settings');
+  test('GET /api/settings returns only public settings', async ({ request }) => {
+    const response = await request.get('/api/settings');
 
     expect(response.ok()).toBeTruthy();
     const body = await response.json();
@@ -47,7 +47,7 @@ test.describe('public API contract security', () => {
     const { response, payload } = await createCustomerOrder(context);
     expect(response.ok()).toBeTruthy();
 
-    for (const endpoint of ['/api/customer/me', '/customer/me']) {
+    for (const endpoint of ['/api/customer/me']) {
       const meResponse = await context.get(endpoint);
       expect(meResponse.ok(), endpoint).toBeTruthy();
       const body = await meResponse.json();

@@ -7,9 +7,6 @@ const protectedGetEndpoints = [
   '/api/admin/orders',
   '/api/admin/options',
   '/api/admin/settings',
-  '/admin/orders',
-  '/admin/options',
-  '/admin/settings',
 ];
 
 const dangerousFields = {
@@ -57,15 +54,15 @@ test.describe('api security coverage', () => {
     const adminOrder = await getAdminOrderByCode(request, orderBody.order.orderCode);
 
     const cases = [
-      request.patch('/admin/settings', {
+      request.patch('/api/admin/settings', {
         headers: authHeaders(token),
         data: { whatsappNumber: '5586999999999', ...dangerousFields },
       }),
-      request.post('/admin/options/doughs', {
+      request.post('/api/admin/options/doughs', {
         headers: authHeaders(token),
         data: { name: `Massa Segura ${Date.now()}`, colorHex: '#f4caca', ...dangerousFields },
       }),
-      request.patch(`/admin/orders/${adminOrder.id}/status`, {
+      request.patch(`/api/admin/orders/${adminOrder.id}/status`, {
         headers: authHeaders(token),
         data: { status: 'IN_PRODUCTION', ...dangerousFields },
       }),
@@ -73,7 +70,7 @@ test.describe('api security coverage', () => {
         headers: authHeaders(token),
         data: { orderIds: [adminOrder.id], status: 'IN_PRODUCTION', ...dangerousFields },
       }),
-      request.post(`/admin/orders/${adminOrder.id}/payments`, {
+      request.post(`/api/admin/orders/${adminOrder.id}/payments`, {
         headers: authHeaders(token),
         data: { amount: 10, paymentMethod: 'PIX', ...dangerousFields },
       }),
@@ -89,10 +86,10 @@ test.describe('api security coverage', () => {
     await ensureStoreOpen(request);
     const catalog = await getPublicCatalog(request);
     const payload = makeOrderPayload(catalog, dangerousFields);
-    const rejected = await request.post('/orders', { data: payload });
+    const rejected = await request.post('/api/orders', { data: payload });
     expect(rejected.status()).toBe(400);
 
-    const accepted = await request.post('/orders', {
+    const accepted = await request.post('/api/orders', {
       data: makeOrderPayload(catalog, { totalPrice: undefined }),
     });
     expect(accepted.ok()).toBeTruthy();
@@ -106,14 +103,14 @@ test.describe('api security coverage', () => {
     const token = await loginAdmin(request);
     const catalog = await getPublicCatalog(request);
 
-    const createResponse = await request.post('/admin/options/doughs', {
+    const createResponse = await request.post('/api/admin/options/doughs', {
       headers: authHeaders(token),
       data: { name: `Massa Inativa ${Date.now()}`, colorHex: '#eeeeee', isActive: false },
     });
     expect(createResponse.ok()).toBeTruthy();
     const inactive = await createResponse.json();
 
-    const inactiveResponse = await request.post('/orders', {
+    const inactiveResponse = await request.post('/api/orders', {
       data: makeOrderPayload(catalog, {
         cake: {
           doughId: inactive.id,
@@ -126,7 +123,7 @@ test.describe('api security coverage', () => {
     });
     expect([400, 404]).toContain(inactiveResponse.status());
 
-    const invalidResponse = await request.post('/orders', {
+    const invalidResponse = await request.post('/api/orders', {
       data: makeOrderPayload(catalog, {
         cake: {
           doughId: '00000000-0000-4000-8000-000000000000',
@@ -154,15 +151,15 @@ test.describe('api security coverage', () => {
     assertNoForbiddenFields(firstBody.order);
     assertNoForbiddenFields(secondBody.order);
 
-    const ownOrders = await firstContext.get('/customer/orders');
+    const ownOrders = await firstContext.get('/api/customer/orders');
     expect(ownOrders.ok()).toBeTruthy();
     assertNoForbiddenFields(await ownOrders.json());
 
-    const ownOrder = await firstContext.get(`/customer/orders/${firstBody.order.publicId}`);
+    const ownOrder = await firstContext.get(`/api/customer/orders/${firstBody.order.publicId}`);
     expect(ownOrder.ok()).toBeTruthy();
     assertNoForbiddenFields(await ownOrder.json());
 
-    const forbidden = await firstContext.get(`/customer/orders/${secondBody.order.publicId}`);
+    const forbidden = await firstContext.get(`/api/customer/orders/${secondBody.order.publicId}`);
     expect([401, 403, 404]).toContain(forbidden.status());
 
     await firstContext.dispose();
@@ -181,10 +178,10 @@ test.describe('api security coverage', () => {
     const firstBody = await first.response.json();
     const secondBody = await second.response.json();
 
-    const ownReorder = await firstContext.get(`/customer/orders/${firstBody.order.publicId}/reorder`);
+    const ownReorder = await firstContext.get(`/api/customer/orders/${firstBody.order.publicId}/reorder`);
     expect(ownReorder.ok()).toBeTruthy();
 
-    const foreignReorder = await firstContext.get(`/customer/orders/${secondBody.order.publicId}/reorder`);
+    const foreignReorder = await firstContext.get(`/api/customer/orders/${secondBody.order.publicId}/reorder`);
     expect([401, 403, 404]).toContain(foreignReorder.status());
 
     await firstContext.dispose();
@@ -214,13 +211,13 @@ test.describe('api security coverage', () => {
   });
 
   test('public DTO endpoints do not leak forbidden fields', async ({ request }) => {
-    for (const endpoint of ['/catalog', '/api/public/catalog']) {
+    for (const endpoint of ['/api/catalog']) {
       const catalog = await request.get(endpoint);
       expect(catalog.ok(), endpoint).toBeTruthy();
       assertNoForbiddenFields(await catalog.json());
     }
 
-    for (const endpoint of ['/settings', '/api/public/settings']) {
+    for (const endpoint of ['/api/settings']) {
       const settings = await request.get(endpoint);
       expect(settings.ok(), endpoint).toBeTruthy();
       assertNoForbiddenFields(await settings.json());
@@ -230,7 +227,7 @@ test.describe('api security coverage', () => {
   test('admin settings endpoints return settings DTO instead of raw singleton record', async ({ request }) => {
     const token = await loginAdmin(request);
 
-    for (const endpoint of ['/admin/settings', '/api/admin/settings']) {
+    for (const endpoint of ['/api/admin/settings']) {
       const response = await request.get(endpoint, {
         headers: authHeaders(token),
       });

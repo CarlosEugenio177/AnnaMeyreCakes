@@ -21,7 +21,7 @@ export async function createCustomerOrder(request: APIRequestContext, suffix = D
     },
   };
 
-  const response = await request.post('/orders', { data: payload });
+  const response = await request.post('/api/orders', { data: payload });
 
   return { response, payload };
 }
